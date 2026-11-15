@@ -1,0 +1,10 @@
+{
+  "appId": "de.emre.capydash",
+  "appName": "Capy Dash",
+  "webDir": "www",
+  "backgroundColor": "#141826",
+  "android": { "allowMixedContent": false },
+  "plugins": {
+    "StatusBar": { "overlaysWebView": true, "style": "DARK", "backgroundColor": "#141826" }
+  }
+}
