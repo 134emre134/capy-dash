@@ -95,7 +95,7 @@ function drawPan(cx, bottom, face, swingT, sc = 1) {
   const ang = swingT > 0 ? -2.3 + (1 - swingT / 18) * 3.6 : -1.1;
   X.save(); X.translate(snap(hx), snap(hy)); X.scale(face, 1); X.rotate(ang);
   X.drawImage(PAN.r, -2, -5 * sc, PAN.w * PX * sc, PAN.h * PX * sc); X.restore();
-  if (swingT >= 5 && swingT <= 14) { X.fillStyle = '#ffffff'; for (let a = -1.8; a <= ang; a += 0.22) X.fillRect(snap(hx + face * Math.cos(a) * 30), snap(hy + Math.sin(a) * 30), 4, 4); }
+  if (swingT >= 5 && swingT <= 14) for (const [rad, col] of [[52, '#ffffff'], [40, '#d6f2ff']]) { X.fillStyle = col; for (let a = -1.8; a <= ang; a += 0.16) X.fillRect(snap(hx + face * Math.cos(a) * rad * sc), snap(hy + Math.sin(a) * rad * sc), 4, 4); }
 }
 function drawBeetle(e, theme) {
   const cx = e.x + e.w / 2, by = e.y + e.h, d = e.vx >= 0 ? 1 : -1, frost = theme === 2;
@@ -261,7 +261,7 @@ function hint(key) { txt(t(touchActive() ? 'hintTap' : key), VW / 2, 505, 10, '#
 function renderMenu() {
   menuBackdrop();
   title('CAPY DASH', 82 + Math.sin(T * 0.05) * 4, 54);
-  txt(t('subtitle') + ' · v0.5', VW / 2, 134, 12, '#2a2140', 'center', false);
+  txt(t('subtitle') + ' · v1.0', VW / 2, 134, 12, '#2a2140', 'center', false);
   MENU.forEach((m, i) => button(t(m.k), VW / 2 - 150, 160 + i * 56, 300, 44, sel === i, m.a, () => sel = i));
   if (showIosHint()) {
     buttons.push({ x: 40, y: 384, w: VW - 80, h: 40, action: () => { iosHintClosed = true; SFX.move(); } });
@@ -328,26 +328,34 @@ function renderSelect() {
   title(t('chooseHero'), 48, 28);
   const w = 212, gap = 20, x0 = (VW - (w * 4 + gap * 3)) / 2;
   CHARS.forEach((c, i) => {
-    const on = charSel === i, x = x0 + i * (w + gap), y = 84 + (on ? -6 : 0), h = 334;
+    const on = charSel === i, x = x0 + i * (w + gap), y = 80 + (on ? -6 : 0), h = 348;
     buttons.push({ x, y, w, h, action: () => { if (charSel === i) go('levels'); else { charSel = i; SFX.move(); } }, hover: () => { if (charSel !== i) { charSel = i; SFX.move(); } } });
     pbox(x, y + 10, w, h, '#1b1530'); pbox(x - 4, y - 4, w + 8, h + 8, on ? '#ffd23a' : '#2a2140'); pbox(x, y, w, h, '#3a2f5c');
-    X.fillStyle = on ? '#8ad0f5' : '#5c6f99'; X.fillRect(x + 12, y + 12, w - 24, 120);
-    X.fillStyle = on ? '#4fc04c' : '#4a7a55'; X.fillRect(x + 12, y + 120, w - 24, 12);
+    X.fillStyle = on ? '#8ad0f5' : '#5c6f99'; X.fillRect(x + 12, y + 12, w - 24, 100);
+    X.fillStyle = on ? '#4fc04c' : '#4a7a55'; X.fillRect(x + 12, y + 100, w - 24, 12);
     const fr = on ? (Math.floor(T / 8) % 2 ? 'walk' : 'stand') : 'stand';
-    const hop = on && c.id === 'owl' ? snap(Math.abs(Math.sin(T * 0.1)) * 12) : 0;
-    drawHero(c.id, x + w / 2, y + 122 - hop, 1, hop > 2 ? 'air' : fr, 2);
-    if (c.id === 'coon') drawPan(x + w / 2, y + 122, 1, on && T % 70 < 18 ? 18 - (T % 70) : 0, 2);
-    txt(t('h_' + c.id), x + w / 2, y + 156, 16, on ? '#ffd23a' : '#fff', 'center', true, w - 20);
-    txt(t('tag_' + c.id), x + w / 2, y + 182, 10, '#c9bfff', 'center', false, w - 20);
+    const hop = on && c.id === 'owl' ? snap(Math.abs(Math.sin(T * 0.1)) * 10) : 0;
+    drawHero(c.id, x + w / 2, y + 102 - hop, 1, hop > 2 ? 'air' : fr, 2);
+    if (c.id === 'coon') drawPan(x + w / 2, y + 102, 1, on && T % 70 < 18 ? 18 - (T % 70) : 0, 2);
+    txt(t('h_' + c.id), x + w / 2, y + 132, 16, on ? '#ffd23a' : '#fff', 'center', true, w - 20);
+    txt(t('tag_' + c.id), x + w / 2, y + 156, 10, '#c9bfff', 'center', false, w - 20);
     [['speed', c.stats[0]], ['jump', c.stats[1]]].forEach(([n, v], k) => {
-      txt(t(n), x + 16, y + 214 + k * 26, 10, '#fff', 'left', false, 72);
-      for (let j = 0; j < 5; j++) { X.fillStyle = j < v ? '#ffd23a' : '#251e3f'; X.fillRect(x + 94 + j * 20, y + 207 + k * 26, 16, 14); }
+      txt(t(n), x + 16, y + 184 + k * 24, 10, '#fff', 'left', false, 72);
+      for (let j = 0; j < 5; j++) { X.fillStyle = j < v ? '#ffd23a' : '#251e3f'; X.fillRect(x + 94 + j * 20, y + 177 + k * 24, 16, 14); }
     });
-    pbox(x + 12, y + 262, w - 24, 58, '#251e3f');
-    txt(t('special'), x + w / 2, y + 278, 9, '#8f86b8', 'center', false, w - 36);
-    txt(t('sp_' + c.id), x + w / 2, y + 300, 11, '#7cf07a', 'center', false, w - 36);
+    pbox(x + 12, y + 224, w - 24, 46, '#251e3f');
+    txt(t('special'), x + w / 2, y + 238, 9, '#8f86b8', 'center', false, w - 36);
+    txt(t('sp_' + c.id), x + w / 2, y + 257, 11, '#7cf07a', 'center', false, w - 36);
+    // high scores per level
+    pbox(x + 12, y + 278, w - 24, 58, '#251e3f');
+    txt(t('highscores'), x + w / 2, y + 291, 9, '#8f86b8', 'center', false, w - 36);
+    LEVELS.forEach((_, li) => {
+      const b = loadBest(li, c.id), cx = x + 12 + (w - 24) * (li + 0.5) / 3;
+      txt(String(li + 1), cx, y + 308, 8, '#c9bfff', 'center', false);
+      txt(b ? String(b.score) : '-', cx, y + 324, 10, b ? '#ffd23a' : '#5c6f99', 'center', false, (w - 24) / 3 - 6);
+    });
   });
-  button(t('next'), VW / 2 - 110, 446, 220, 46, true, () => go('levels'));
+  button(t('next'), VW / 2 - 110, 448, 220, 44, true, () => go('levels'));
   if (!touchActive()) txt(t('hintSelect'), VW / 2, 508, 9, '#fff', 'center');
   else button(t('back'), 16, 450, 130, 44, false, () => go('menu'), null, 14);
 }

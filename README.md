@@ -1,4 +1,4 @@
-# Capy Dash v0.5
+# Capy Dash v1.0
 
 A tiny retro pixel platformer: 4 heroes, 3 levels, 2 bosses, English / Deutsch / Türkçe.
 Built for phones in landscape, also plays with keyboard and mouse.

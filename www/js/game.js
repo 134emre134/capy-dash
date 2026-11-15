@@ -5,7 +5,7 @@
 const CHARS = [
   { id: 'capy', special: 'dash', w: 34, h: 28, maxSpeed: 3.6, runSpeed: 5.6, accel: 0.32, airAccel: 0.24, friction: 0.42, airFriction: 0.06, jump: 12.5, gravity: 0.55, stats: [3, 3] },
   { id: 'owl', special: 'spit', w: 26, h: 28, maxSpeed: 3.9, runSpeed: 6.0, accel: 0.4, airAccel: 0.32, friction: 0.3, airFriction: 0.04, jump: 13.6, gravity: 0.58, stats: [4, 4] },
-  { id: 'mole', special: 'pound', w: 30, h: 28, maxSpeed: 3.4, runSpeed: 5.4, accel: 0.34, airAccel: 0.26, friction: 0.38, airFriction: 0.06, jump: 12.3, gravity: 0.55, stats: [3, 3] },
+  { id: 'mole', special: 'pound', w: 30, h: 28, maxSpeed: 3.4, runSpeed: 5.4, accel: 0.34, airAccel: 0.26, friction: 0.38, airFriction: 0.06, jump: 13.1, gravity: 0.55, stats: [3, 3] },
   { id: 'coon', special: 'swing', w: 28, h: 30, maxSpeed: 3.7, runSpeed: 5.7, accel: 0.36, airAccel: 0.26, friction: 0.4, airFriction: 0.06, jump: 12.6, gravity: 0.56, stats: [3, 3] }
 ];
 
@@ -22,7 +22,7 @@ function calcScore(lv, coins, frames) {
 
 function newPlayer(ch, x) {
   return { x, y: 11 * TS - ch.h, w: ch.w, h: ch.h, vx: 0, vy: 0, face: 1, onGround: false, coyote: 0, buf: 0, anim: 0, inv: 0,
-    dead: false, deadT: 0, fell: false, prevBottom: 0, pound: false, poundT: 0, canDash: true, dashT: 0, swingT: 0, swingCd: 0, swingHit: false, spitCd: 0, spitT: 0, onIce: false };
+    dead: false, deadT: 0, fell: false, prevBottom: 0, pound: false, poundT: 0, canDash: true, dashT: 0, swingT: 0, swingCd: 0, swingHit: false, spitCd: 0, spitT: 0, onIce: false, dashInv: 0 };
 }
 function newBoss(lv) {
   if (lv.boss === 'snowman') return { type: 'snowman', x: lv.arenaX0 + 640, y: 11 * TS - 84, w: 56, h: 84, vx: 0, vy: 0, state: 'idle', t: 0, hp: 6, max: 6, inv: 0, anim: 0, face: -1, throwT: 0, phase2: false };
@@ -40,6 +40,8 @@ function go(s) { state = s; sel = 0; notesScroll = 0; SFX.move(); }
 function addPart(o) { G.parts.push(Object.assign({ vx: 0, vy: 0, g: 0, life: 30, max: 30, size: 4, col: '#ffffff', type: 'sq' }, o)); }
 function puff(x, y, n = 6, col = '#ffffff') { for (let i = 0; i < n; i++) addPart({ x, y, vx: (Math.random() - 0.5) * 3, vy: -Math.random() * 1.5, life: 22, max: 22, size: 5 + Math.random() * 4, col, type: 'puff' }); }
 
+// hurt checks: normal invincibility (after respawn) or the capybara's dash i-frames
+const safe = p => p.inv > 0 || p.dashInv > 0;
 function killPlayer(bounce) {
   const p = G.p; if (p.dead) return;
   p.dead = true; p.deadT = 0; p.fell = !bounce; p.vy = bounce ? -10 : 0; p.vx = 0; p.pound = false; p.dashT = 0;
@@ -106,7 +108,7 @@ function bossContact(B, p, topPad) {
     const pounding = p.pound;
     hurtBoss(pounding ? 2 : 1); p.pound = false; p.vy = -10; p.canDash = true; p.y = B.y - p.h;
     if (pounding) shockSlam(p);
-  } else if (p.inv <= 0) killPlayer(true);
+  } else if (!safe(p)) killPlayer(true);
 }
 function updateBoss() {
   const B = G.boss, lv = G.lv, p = G.p; if (!B) return;
@@ -224,7 +226,7 @@ function updateHaz() {
       h.x += h.vx; h.y += h.vy;
       if (isSolid(lv, Math.floor((h.x + h.w / 2) / TS), Math.floor((h.y + h.h / 2) / TS))) { h.life = 0; puff(h.x + 6, h.y + 6, 3, h.type === 'web' ? '#e4e8ee' : '#ffffff'); }
     }
-    if (h.life > 0 && !p.dead && !G.clear && p.inv <= 0 && overlap(p, h)) { h.life = 0; killPlayer(true); }
+    if (h.life > 0 && !p.dead && !G.clear && !safe(p) && overlap(p, h)) { h.life = 0; killPlayer(true); }
   }
   G.haz = G.haz.filter(h => h.life > 0);
 }
@@ -247,7 +249,7 @@ function updateShots() {
 // Hero specials
 // =====================================================================
 function swingHits(p) {
-  const lv = G.lv, hb = { x: p.face > 0 ? p.x + p.w - 6 : p.x - 42, y: p.y - 14, w: 48, h: p.h + 18 };
+  const lv = G.lv, R = 76, hb = { x: p.face > 0 ? p.x + p.w - 6 : p.x + 6 - R, y: p.y - 26, w: R, h: p.h + 34 };
   for (const e of lv.enemies) if (e.alive && overlap(hb, e)) { killEnemy(e, true); SFX.clang(); }
   for (const h of G.haz) if (h.life > 0 && overlap(hb, h) && smashHazard(h)) SFX.clang();
   if (G.boss && !p.swingHit && overlap(hb, G.boss) && hurtBoss(1)) p.swingHit = true;
@@ -297,14 +299,14 @@ function updateGame() {
     if (p.pound) p.poundT++;
     if (ch.special === 'dash' && hit.action && !p.onGround && p.canDash && p.dashT <= 0) {
       const d = ((held.right ? 1 : 0) - (held.left ? 1 : 0)) || p.face;
-      p.face = d; p.dashT = 13; p.canDash = false; p.vx = d * 10.5; p.vy = 0; SFX.dash();
+      p.face = d; p.dashT = 13; p.dashInv = 31; p.canDash = false; p.vx = d * 10.5; p.vy = 0; SFX.dash();
     }
     if (ch.special === 'swing' && hit.action && p.swingCd <= 0) { p.swingT = 18; p.swingCd = 26; p.swingHit = false; SFX.swing(); }
     if (p.swingT > 0) { p.swingT--; if (p.swingT <= 14 && p.swingT >= 5) swingHits(p); }
     if (p.swingCd > 0) p.swingCd--;
     if (ch.special === 'spit' && hit.action && p.spitCd <= 0 && G.shots.length < 3) {
-      G.shots.push({ x: p.face > 0 ? p.x + p.w - 2 : p.x - 10, y: p.y + 9, w: 12, h: 10, vx: p.face * 8.5 + p.vx * 0.3, life: 60 });
-      p.spitCd = 16; p.spitT = 8; SFX.spit(); puff(p.x + p.w / 2 + p.face * 16, p.y + 12, 2, '#fff3a1');
+      G.shots.push({ x: p.face > 0 ? p.x + p.w - 2 : p.x - 10, y: p.y + 9, w: 12, h: 10, vx: p.face * 6 + p.vx * 0.2, life: 34 });
+      p.spitCd = 22; p.spitT = 8; SFX.spit(); puff(p.x + p.w / 2 + p.face * 16, p.y + 12, 2, '#fff3a1');
     }
     if (p.spitCd > 0) p.spitCd--;
     if (p.spitT > 0) p.spitT--;
@@ -357,13 +359,14 @@ function updateGame() {
     if (r.landed && !wasGround && vyBefore > 5) puff(p.x + p.w / 2, p.y + p.h, 4);
     p.anim += p.onGround ? Math.abs(p.vx) * 0.06 : 0;
     if (p.inv > 0) p.inv--;
+    if (p.dashInv > 0) p.dashInv--;
 
     // --- tiles: coins + spikes ---
     const tx0 = Math.floor(p.x / TS), tx1 = Math.floor((p.x + p.w - 0.01) / TS), ty0 = Math.floor(p.y / TS), ty1 = Math.floor((p.y + p.h - 0.01) / TS);
     for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) {
       const tl = tileAt(lv, tx, ty);
       if (tl === 'o') { lv.g[ty][tx] = '.'; collectCoin(tx * TS + 20, ty * TS + 20); }
-      else if (tl === '^' && p.inv <= 0 && overlap(p, { x: tx * TS + 6, y: ty * TS + 20, w: 28, h: 20 })) killPlayer(true);
+      else if (tl === '^' && !safe(p) && overlap(p, { x: tx * TS + 6, y: ty * TS + 20, w: 28, h: 20 })) killPlayer(true);
     }
     if (p.y > lv.H * TS + 40) killPlayer(false);
 
@@ -398,7 +401,7 @@ function updateGame() {
       else if (p.vy >= 0 && p.prevBottom <= e.y + 10) {
         killEnemy(e, false); p.y = e.y - p.h; p.canDash = true;
         p.vy = held.jump ? -ch.jump * 0.95 : -7.5;
-      } else if (p.inv <= 0) killPlayer(true);
+      } else if (!safe(p)) killPlayer(true);
     }
   }
   lv.enemies = lv.enemies.filter(e => e.alive || (e.flipped ? e.y < lv.H * TS + 200 : e.deadT < 30));

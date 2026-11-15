@@ -22,7 +22,7 @@ const STR = {
     tag_capy: 'CHILL & STEADY', tag_owl: 'SHARP-EYED OWL', tag_mole: 'HARD-HAT MOLE', tag_coon: 'RACCOON WITH A PAN',
     sp_capy: 'AIR DASH', sp_owl: 'SPIT SHOT', sp_mole: 'SHOCK SLAM', sp_coon: 'PAN SWING',
     l1: 'SUNNY HILLS', l2: 'MOONLIT WEB', l3: 'FROST PEAK', l1d: 'THE ORIGINAL TEST LEVEL', l2d: 'NIGHT STAGE + SPIDER BOSS', l3d: 'ICE, SNOW + SNOWMAN BOSS',
-    iosHint: 'FULLSCREEN: TAP SHARE, THEN "ADD TO HOME SCREEN"', boss_spider: 'MOONWEAVER', boss_snowman: 'GRIMFROST', ab_spider: 'WEB STORM!', ab_snowman: 'ICICLE RAIN!'
+    highscores: 'HIGH SCORES · LEVEL', iosHint: 'FULLSCREEN: TAP SHARE, THEN "ADD TO HOME SCREEN"', boss_spider: 'MOONWEAVER', boss_snowman: 'GRIMFROST', ab_spider: 'WEB STORM!', ab_snowman: 'ICICLE RAIN!'
   },
   de: {
     langName: 'DEUTSCH', play: 'SPIELEN', settings: 'EINSTELLUNGEN', controls: 'STEUERUNG', notes: 'PATCH-NOTIZEN', subtitle: 'EIN KLEINER PLATFORMER',
@@ -42,7 +42,7 @@ const STR = {
     tag_capy: 'ENTSPANNT & SOLIDE', tag_owl: 'SCHARFÄUGIGE EULE', tag_mole: 'MAULWURF MIT HELM', tag_coon: 'WASCHBÄR MIT PFANNE',
     sp_capy: 'LUFTSPRINT', sp_owl: 'SPUCKSCHUSS', sp_mole: 'SCHOCKSTAMPFER', sp_coon: 'PFANNENHIEB',
     l1: 'SONNENHÜGEL', l2: 'MONDNETZ', l3: 'FROSTGIPFEL', l1d: 'DAS ORIGINALE TESTLEVEL', l2d: 'NACHTLEVEL + SPINNEN-BOSS', l3d: 'EIS, SCHNEE + SCHNEEMANN-BOSS',
-    iosHint: 'VOLLBILD: TEILEN TIPPEN, DANN "ZUM HOME-BILDSCHIRM"', boss_spider: 'MONDWEBERIN', boss_snowman: 'GRIMMFROST', ab_spider: 'NETZSTURM!', ab_snowman: 'EISZAPFENREGEN!'
+    highscores: 'REKORDE · LEVEL', iosHint: 'VOLLBILD: TEILEN TIPPEN, DANN "ZUM HOME-BILDSCHIRM"', boss_spider: 'MONDWEBERIN', boss_snowman: 'GRIMMFROST', ab_spider: 'NETZSTURM!', ab_snowman: 'EISZAPFENREGEN!'
   },
   tr: {
     langName: 'TÜRKÇE', play: 'OYNA', settings: 'AYARLAR', controls: 'KONTROLLER', notes: 'GÜNCELLEME NOTLARI', subtitle: 'KÜÇÜK BİR PLATFORM OYUNU',
@@ -62,7 +62,7 @@ const STR = {
     tag_capy: 'SAKİN VE SAĞLAM', tag_owl: 'KESKİN GÖZLÜ BAYKUŞ', tag_mole: 'BARETLİ KÖSTEBEK', tag_coon: 'TAVALI RAKUN',
     sp_capy: 'HAVA ATILIMI', sp_owl: 'TÜKÜRÜK ATIŞI', sp_mole: 'ŞOK DARBESİ', sp_coon: 'TAVA SALLAMA',
     l1: 'GÜNEŞLİ TEPELER', l2: 'AY IŞIĞI AĞI', l3: 'AYAZ ZİRVESİ', l1d: 'ORİJİNAL TEST BÖLÜMÜ', l2d: 'GECE BÖLÜMÜ + ÖRÜMCEK BOSS', l3d: 'BUZ, KAR + KARDAN ADAM BOSS',
-    iosHint: 'TAM EKRAN: PAYLAŞ, SONRA "ANA EKRANA EKLE"', boss_spider: 'AY DOKUYUCU', boss_snowman: 'KARA AYAZ', ab_spider: 'AĞ FIRTINASI!', ab_snowman: 'BUZ SARKITI YAĞMURU!'
+    highscores: 'REKORLAR · BÖLÜM', iosHint: 'TAM EKRAN: PAYLAŞ, SONRA "ANA EKRANA EKLE"', boss_spider: 'AY DOKUYUCU', boss_snowman: 'KARA AYAZ', ab_spider: 'AĞ FIRTINASI!', ab_snowman: 'BUZ SARKITI YAĞMURU!'
   }
 };
 function t(key, ...a) {
@@ -70,57 +70,63 @@ function t(key, ...a) {
   return s.replace(/\{(\d)\}/g, (_, i) => a[+i]);
 }
 
-// Patch notes: ['#', header] or a bullet line (wrapped automatically)
+// Patch notes (gameplay changes only): ['#', header] or a bullet line (wrapped automatically)
 const NOTES = {
   en: [
-    ['#', 'v0.5  MOBILE & FROST'],
-    'Capy Dash is now an app: Android/iOS project (Capacitor) and an installable web app (PWA) that works offline',
-    'Built for phones: landscape lock, fullscreen, wide screens, new touch controls (hold a direction longer to run), vibration',
-    'New settings menu with languages: English, Deutsch, Türkçe',
-    'New pixel font with German and Turkish letters',
-    'Kerim\'s slam is now a SHOCK SLAM: a shockwave hits everything around him',
-    'Mochi the frog is replaced by AYS the owl, who spits yellow seeds (B button / left click / C)',
+    ['#', 'v1.0  RELEASE'],
+    'Capybara: the AIR DASH now makes you invincible for a moment - dash through beetles, webs, snowballs and spikes',
+    'Rocco: the PAN SWING reaches much further',
+    'Ays: SPIT SHOT seeds fly slower, don\'t go as far and need a bit longer to recharge',
+    'Kerim jumps higher',
+    ['#', 'v0.5  FROST'],
+    'Kerim\'s slam became the SHOCK SLAM: a shockwave hits everything around him',
+    'New hero AYS the owl replaces Mochi the frog and spits yellow seeds that hit enemies, bosses, webs and bricks',
     'Moonweaver: less HP (4) and a new WEB STORM attack below half HP',
-    'Level 3 FROST PEAK: snow, slippery ice and the boss GRIMFROST, an evil snowman who throws snowballs and calls down icicles when he gets angry',
+    'New level 3 FROST PEAK with slippery ice and the boss GRIMFROST, an evil snowman who throws snowballs, jumps at you and calls down icicles when he gets angry',
     ['#', 'v0.4  NIGHT & STEEL'],
-    'Hand-made pixel sprites', 'New hero Rocco with a frying pan swing', 'Capybara air dash',
-    'Score: 100 per coin + time bonus under par, ranks S-C, best scores', 'Level 2 MOONLIT WEB with the Moonweaver boss', 'Level select and patch notes',
-    ['#', 'v0.3  RETRO LOOK'], 'Half-resolution pixel renderer, fixed colour palette, dithered overlays',
+    'New hero Rocco the raccoon with a frying pan swing',
+    'Capybara AIR DASH',
+    'New scoring: 100 per coin + time bonus under par, ranks S to C',
+    'New level 2 MOONLIT WEB with the spider boss Moonweaver',
     ['#', 'v0.2  KERIM'], 'New hero Kerim, the hard-hat mole with a ground pound',
-    ['#', 'v0.1  FIRST PLAYABLE'], 'Main menu, hero select, test level with start line, checkpoint and finish, coins, blocks, beetles and a pause menu'
+    ['#', 'v0.1  FIRST PLAYABLE'], 'Heroes Capybara and Mochi, test level with start line, checkpoint and finish, coins, star blocks, bricks, spikes, pits and beetles'
   ],
   de: [
-    ['#', 'v0.5  MOBIL & FROST'],
-    'Capy Dash ist jetzt eine App: Android/iOS-Projekt (Capacitor) und eine installierbare Web-App (PWA), die offline läuft',
-    'Für Handys gebaut: Querformat-Sperre, Vollbild, Breitbild, neue Touch-Steuerung (Richtung länger halten zum Rennen), Vibration',
-    'Neues Einstellungsmenü mit Sprachen: English, Deutsch, Türkçe',
-    'Neue Pixelschrift mit deutschen und türkischen Buchstaben',
-    'Kerims Stampfer ist jetzt ein SCHOCKSTAMPFER: eine Schockwelle trifft alles um ihn herum',
-    'Frosch Mochi wurde durch die Eule AYS ersetzt, die gelbe Körner spuckt (B-Taste / Linksklick / C)',
+    ['#', 'v1.0  RELEASE'],
+    'Capybara: der LUFTSPRINT macht dich kurz unverwundbar - sprinte durch Käfer, Netze, Schneebälle und Stacheln',
+    'Rocco: der PFANNENHIEB hat jetzt eine viel größere Reichweite',
+    'Ays: die Körner des SPUCKSCHUSS fliegen langsamer, weniger weit und laden etwas länger nach',
+    'Kerim springt höher',
+    ['#', 'v0.5  FROST'],
+    'Kerims Stampfer wurde zum SCHOCKSTAMPFER: eine Schockwelle trifft alles um ihn herum',
+    'Neue Heldin AYS, die Eule, ersetzt Frosch Mochi und spuckt gelbe Körner, die Gegner, Bosse, Netze und Ziegel treffen',
     'Mondweberin: weniger LP (4) und ein neuer NETZSTURM-Angriff unter halber LP',
-    'Level 3 FROSTGIPFEL: Schnee, rutschiges Eis und der Boss GRIMMFROST, ein böser Schneemann, der Schneebälle wirft und wütend Eiszapfen herabregnen lässt',
+    'Neues Level 3 FROSTGIPFEL mit rutschigem Eis und dem Boss GRIMMFROST, einem bösen Schneemann, der Schneebälle wirft, auf dich springt und wütend Eiszapfen herabregnen lässt',
     ['#', 'v0.4  NACHT & STAHL'],
-    'Handgezeichnete Pixel-Sprites', 'Neuer Held Rocco mit Pfannenhieb', 'Luftsprint für das Capybara',
-    'Punkte: 100 pro Münze + Zeitbonus unter der Zielzeit, Ränge S-C, Rekorde', 'Level 2 MONDNETZ mit der Mondweberin als Boss', 'Levelauswahl und Patch-Notizen',
-    ['#', 'v0.3  RETRO-LOOK'], 'Pixel-Renderer in halber Auflösung, feste Farbpalette, gerasterte Overlays',
+    'Neuer Held Rocco, der Waschbär mit Pfannenhieb',
+    'LUFTSPRINT für das Capybara',
+    'Neue Punktewertung: 100 pro Münze + Zeitbonus unter der Zielzeit, Ränge S bis C',
+    'Neues Level 2 MONDNETZ mit der Spinnen-Bossin Mondweberin',
     ['#', 'v0.2  KERIM'], 'Neuer Held Kerim, der Maulwurf mit Helm und Stampfattacke',
-    ['#', 'v0.1  ERSTE SPIELBARE VERSION'], 'Hauptmenü, Heldenauswahl, Testlevel mit Startlinie, Checkpoint und Ziel, Münzen, Blöcke, Käfer und Pausenmenü'
+    ['#', 'v0.1  ERSTE SPIELBARE VERSION'], 'Helden Capybara und Mochi, Testlevel mit Startlinie, Checkpoint und Ziel, Münzen, Sternblöcke, Ziegel, Stacheln, Abgründe und Käfer'
   ],
   tr: [
-    ['#', 'v0.5  MOBİL & AYAZ'],
-    'Capy Dash artık bir uygulama: Android/iOS projesi (Capacitor) ve çevrimdışı çalışan yüklenebilir web uygulaması (PWA)',
-    'Telefonlar için tasarlandı: yatay ekran kilidi, tam ekran, geniş ekran desteği, yeni dokunmatik kontroller (koşmak için yöne uzun bas), titreşim',
-    'Dil seçenekli yeni ayarlar menüsü: English, Deutsch, Türkçe',
-    'Almanca ve Türkçe harfleri içeren yeni piksel yazı tipi',
-    'Kerim\'in darbesi artık bir ŞOK DARBESİ: şok dalgası etrafındaki her şeye çarpar',
-    'Kurbağa Mochi\'nin yerini sarı tohumlar tüküren baykuş AYS aldı (B tuşu / sol tık / C)',
+    ['#', 'v1.0  ÇIKIŞ'],
+    'Kapibara: HAVA ATILIMI artık seni kısa süre ölümsüz yapıyor - böceklerin, ağların, kartopların ve dikenlerin içinden geç',
+    'Rocco: TAVA SALLAMA artık çok daha uzağa ulaşıyor',
+    'Ays: TÜKÜRÜK ATIŞI tohumları daha yavaş ve daha kısa mesafeye gidiyor, dolması biraz daha uzun sürüyor',
+    'Kerim daha yükseğe zıplıyor',
+    ['#', 'v0.5  AYAZ'],
+    'Kerim\'in darbesi ŞOK DARBESİ oldu: şok dalgası etrafındaki her şeye çarpar',
+    'Yeni kahraman baykuş AYS, kurbağa Mochi\'nin yerini aldı; düşmanlara, bosslara, ağlara ve tuğlalara çarpan sarı tohumlar tükürür',
     'Ay Dokuyucu: daha az can (4) ve canı yarının altına inince yeni AĞ FIRTINASI saldırısı',
-    'Bölüm 3 AYAZ ZİRVESİ: kar, kaygan buz ve kartopu atan, sinirlenince buz sarkıtları yağdıran kötü kardan adam KARA AYAZ',
+    'Yeni Bölüm 3 AYAZ ZİRVESİ: kaygan buz ve kartopu atan, üstüne zıplayan, sinirlenince buz sarkıtları yağdıran kötü kardan adam boss KARA AYAZ',
     ['#', 'v0.4  GECE & ÇELİK'],
-    'Elle çizilmiş piksel karakterler', 'Tava sallayan yeni kahraman Rocco', 'Kapibara için hava atılımı',
-    'Puan: altın başına 100 + hedef sürenin altında süre bonusu, S-C dereceleri, rekorlar', 'Ay Dokuyucu boss\'lu Bölüm 2 AY IŞIĞI AĞI', 'Bölüm seçimi ve güncelleme notları',
-    ['#', 'v0.3  RETRO GÖRÜNÜM'], 'Yarı çözünürlükte piksel çizimi, sabit renk paleti, desenli karartma',
+    'Tava sallayan yeni kahraman rakun Rocco',
+    'Kapibara için HAVA ATILIMI',
+    'Yeni puanlama: altın başına 100 + hedef sürenin altında süre bonusu, S\'den C\'ye dereceler',
+    'Örümcek boss Ay Dokuyucu ile yeni Bölüm 2 AY IŞIĞI AĞI',
     ['#', 'v0.2  KERİM'], 'Yeni kahraman: yere çakılma saldırısı yapan baretli köstebek Kerim',
-    ['#', 'v0.1  İLK OYNANABİLİR SÜRÜM'], 'Ana menü, kahraman seçimi, başlangıç çizgisi, kontrol noktası ve bitişi olan test bölümü, altınlar, bloklar, böcekler ve duraklatma menüsü'
+    ['#', 'v0.1  İLK OYNANABİLİR SÜRÜM'], 'Kahramanlar Kapibara ve Mochi; başlangıç çizgisi, kontrol noktası ve bitişi olan test bölümü, altınlar, yıldız blokları, tuğlalar, dikenler, çukurlar ve böcekler'
   ]
 };

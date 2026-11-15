@@ -79,7 +79,7 @@ addEventListener('keydown', e => {
   acts.forEach(a => setHeld('K', a, true));
 });
 addEventListener('keyup', e => { const acts = KEYMAP[e.code]; if (acts) acts.forEach(a => setHeld('K', a, false)); });
-addEventListener('blur', () => { for (const s in SRCS) for (const a in SRCS[s]) setHeld(s, a, false); });
+addEventListener('blur', () => { ptrs.clear(); for (const s in SRCS) for (const a in SRCS[s]) setHeld(s, a, false); });
 
 let mouse = { x: -1, y: -1 }, buttons = [];
 let usingTouch = matchMedia('(pointer: coarse)').matches;
@@ -87,23 +87,38 @@ const ptrs = new Map();
 function touchActive() { return SETTINGS.touch === 'on' || (SETTINGS.touch === 'auto' && usingTouch); }
 function toView(e) { const r = C.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * VW, y: (e.clientY - r.top) / r.height * VH }; }
 function overBtn(b) { return mouse.x >= b.x && mouse.x <= b.x + b.w && mouse.y >= b.y && mouse.y <= b.y + b.h; }
-C.addEventListener('pointerdown', e => {
-  e.preventDefault(); initAudio();
-  const isMouse = e.pointerType === 'mouse';
-  if (!isMouse) usingTouch = true;
-  firstGesture(isMouse);
-  mouse = toView(e);
-  if (!isMouse) { try { C.setPointerCapture(e.pointerId); } catch (_) {} ptrs.set(e.pointerId, mouse); }
+// Mouse / pen: pointer events. Touch: touch events, rebuilding the finger list from
+// e.touches every time, so a lost "touchend" (iOS) can never leave a button stuck.
+function pressAt(isMouse, e) {
+  initAudio(); firstGesture(isMouse);
   if (state !== 'play') { for (const b of buttons) if (overBtn(b)) { b.action(); return; } }
   else if (isMouse && e.button === 0) setHeld('M', 'action', true);
+}
+C.addEventListener('pointerdown', e => {
+  if (e.pointerType === 'touch') return;                 // handled by touch events
+  e.preventDefault();
+  mouse = toView(e); pressAt(e.pointerType === 'mouse', e);
 });
 C.addEventListener('pointermove', e => {
+  if (e.pointerType === 'touch') return;
   mouse = toView(e);
-  if (ptrs.has(e.pointerId)) ptrs.set(e.pointerId, mouse);
   if (e.pointerType === 'mouse') for (const b of buttons) if (overBtn(b) && b.hover) b.hover();
 });
-const endPtr = e => { ptrs.delete(e.pointerId); if (e.pointerType === 'mouse') setHeld('M', 'action', false); };
-['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => C.addEventListener(t, endPtr));
+['pointerup', 'pointercancel'].forEach(t => C.addEventListener(t, e => { if (e.pointerType === 'mouse') setHeld('M', 'action', false); }));
+function syncFingers(e) {
+  ptrs.clear();
+  for (const tch of e.touches) ptrs.set(tch.identifier, toView(tch));
+}
+C.addEventListener('touchstart', e => {
+  e.preventDefault(); usingTouch = true;
+  syncFingers(e);
+  for (const tch of e.changedTouches) { mouse = toView(tch); pressAt(false, e); }
+}, { passive: false });
+C.addEventListener('touchmove', e => { e.preventDefault(); syncFingers(e); }, { passive: false });
+['touchend', 'touchcancel'].forEach(tp => document.addEventListener(tp, e => syncFingers(e), { passive: true }));
+const clearFingers = () => { ptrs.clear(); for (const s in SRCS) for (const a in SRCS[s]) setHeld(s, a, false); };
+addEventListener('pagehide', clearFingers);
+document.addEventListener('visibilitychange', () => { if (document.hidden) clearFingers(); });
 C.addEventListener('contextmenu', e => e.preventDefault());
 C.addEventListener('wheel', e => { if (state === 'notes') { notesScroll += Math.sign(e.deltaY) * 2; e.preventDefault(); } }, { passive: false });
 document.addEventListener('gesturestart', e => e.preventDefault());
