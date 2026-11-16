@@ -51,7 +51,8 @@ function glyphPixels(ch) {
 }
 function upper(s) { return String(s).toLocaleUpperCase(SETTINGS.lang === 'tr' ? 'tr-TR' : 'en-US'); }
 // logical width of a string at a given size
-function textWidth(s, size) { const n = [...upper(s)].length; return n ? (n * 6 - 1) * size / 8 : 0; }
+// (matches drawText: glyph pixels are rounded to whole device pixels)
+function textWidth(s, size) { const n = [...upper(s)].length, k = C.width / VW; return n ? (n * 6 - 1) * Math.max(1, Math.round(size / 8 * k)) / k : 0; }
 
 const TCACHE = new Map();
 function textCanvas(str, u, col, shadow, outline) {

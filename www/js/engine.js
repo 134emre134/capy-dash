@@ -218,6 +218,10 @@ const SFX = {
   web: () => beep(260, 0.12, 'triangle', 0.05, 520),
   toss: () => beep(400, 0.12, 'triangle', 0.05, 200),
   shatter: () => beep(1500, 0.1, 'square', 0.025, 600),
+  roll: () => { beep(140, 0.3, 'triangle', 0.08, 70); beep(90, 0.25, 'square', 0.025, 60, 0.05); },
+  hiss: () => beep(2400, 0.16, 'sawtooth', 0.012, 1500),
+  roar: () => [110, 95, 80].forEach((f, i) => beep(f, 0.22, 'sawtooth', 0.07, f * 0.7, i * 0.12)),
+  lava: () => { beep(240, 0.18, 'sawtooth', 0.04, 90); beep(500, 0.1, 'square', 0.02, 200, 0.05); },
   boss: () => [196, 185, 175, 147].forEach((f, i) => beep(f, 0.25, 'sawtooth', 0.04, 0, i * 0.2)),
   bossHit: () => { beep(160, 0.2, 'square', 0.06, 60); beep(800, 0.06, 'square', 0.03); }
 };

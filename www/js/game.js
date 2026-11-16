@@ -2,11 +2,19 @@
 // =====================================================================
 // Game: heroes, scoring, player, enemies, bosses, projectiles, menus logic
 // =====================================================================
+// stats = [SPEED, JUMP, POWER] bars (1-5) shown on the hero select screen.
+// Keep them in line with the physics below: SPEED ~ maxSpeed/runSpeed, JUMP ~ jump.
 const CHARS = [
-  { id: 'capy', special: 'dash', w: 34, h: 28, maxSpeed: 3.6, runSpeed: 5.6, accel: 0.32, airAccel: 0.24, friction: 0.42, airFriction: 0.06, jump: 12.5, gravity: 0.55, stats: [3, 3] },
-  { id: 'owl', special: 'spit', w: 26, h: 28, maxSpeed: 3.9, runSpeed: 6.0, accel: 0.4, airAccel: 0.32, friction: 0.3, airFriction: 0.04, jump: 13.6, gravity: 0.58, stats: [4, 4] },
-  { id: 'mole', special: 'pound', w: 30, h: 28, maxSpeed: 3.4, runSpeed: 5.4, accel: 0.34, airAccel: 0.26, friction: 0.38, airFriction: 0.06, jump: 13.1, gravity: 0.55, stats: [3, 3] },
-  { id: 'coon', special: 'swing', w: 28, h: 30, maxSpeed: 3.7, runSpeed: 5.7, accel: 0.36, airAccel: 0.26, friction: 0.4, airFriction: 0.06, jump: 12.6, gravity: 0.56, stats: [3, 3] }
+  // capybaras are surprisingly quick sprinters but heavy jumpers
+  { id: 'capy', special: 'dash', w: 34, h: 28, maxSpeed: 4.0, runSpeed: 6.2, accel: 0.34, airAccel: 0.24, friction: 0.42, airFriction: 0.06, jump: 12.5, gravity: 0.55, stats: [4, 2, 3] },
+  // light, floaty owl: best jumper, weakest hitter
+  { id: 'owl', special: 'spit', w: 26, h: 28, maxSpeed: 3.7, runSpeed: 5.8, accel: 0.4, airAccel: 0.32, friction: 0.3, airFriction: 0.04, jump: 13.6, gravity: 0.58, stats: [3, 5, 2] },
+  // Fred the mole digs, he doesn't sprint - but his slam hits hard
+  { id: 'mole', special: 'pound', w: 30, h: 28, maxSpeed: 3.2, runSpeed: 5.0, accel: 0.34, airAccel: 0.26, friction: 0.38, airFriction: 0.06, jump: 12.9, gravity: 0.55, stats: [2, 3, 4] },
+  // nimble climbing raccoon
+  { id: 'coon', special: 'swing', w: 28, h: 30, maxSpeed: 3.6, runSpeed: 5.7, accel: 0.36, airAccel: 0.26, friction: 0.4, airFriction: 0.06, jump: 13.2, gravity: 0.56, stats: [3, 4, 3] },
+  // Cheemus the polar bear: heavy, strong, rolls along the ground
+  { id: 'bear', special: 'roll', w: 36, h: 30, maxSpeed: 3.5, runSpeed: 5.6, accel: 0.3, airAccel: 0.22, friction: 0.44, airFriction: 0.06, jump: 12.5, gravity: 0.56, stats: [3, 2, 5] }
 ];
 
 let state = 'menu', sel = 0, charSel = 0, levelSel = 0, G = null, T = 0, notesScroll = 0;
@@ -22,9 +30,11 @@ function calcScore(lv, coins, frames) {
 
 function newPlayer(ch, x) {
   return { x, y: 11 * TS - ch.h, w: ch.w, h: ch.h, vx: 0, vy: 0, face: 1, onGround: false, coyote: 0, buf: 0, anim: 0, inv: 0,
-    dead: false, deadT: 0, fell: false, prevBottom: 0, pound: false, poundT: 0, canDash: true, dashT: 0, swingT: 0, swingCd: 0, swingHit: false, spitCd: 0, spitT: 0, onIce: false, dashInv: 0 };
+    dead: false, deadT: 0, fell: false, prevBottom: 0, pound: false, poundT: 0, canDash: true, dashT: 0, swingT: 0, swingCd: 0, swingHit: false, spitCd: 0, spitT: 0, onIce: false, dashInv: 0, dashHit: false, rollT: 0, rollCd: 0, rollA: 0 };
 }
 function newBoss(lv) {
+  if (lv.boss === 'snake') return { type: 'snake', x: lv.arenaX1 - 200, y: SNAKE_LOW, w: 60, h: 30, vx: 0, vy: 0, state: 'idle', t: 0, hp: 5, max: 5, inv: 0, anim: 0, face: -1, phase2: false, volleys: 0, shots: 0 };
+  if (lv.boss === 'ape') return { type: 'ape', x: lv.arenaX0 + 560, y: 11 * TS - 58, w: 64, h: 58, vx: 0, vy: 0, state: 'idle', t: 0, hp: 6, max: 6, inv: 0, anim: 0, face: -1, phase2: false, jumps: 0, thrown: false, landX: 0 };
   if (lv.boss === 'snowman') return { type: 'snowman', x: lv.arenaX0 + 640, y: 11 * TS - 84, w: 56, h: 84, vx: 0, vy: 0, state: 'idle', t: 0, hp: 6, max: 6, inv: 0, anim: 0, face: -1, throwT: 0, phase2: false };
   return { type: 'spider', x: (lv.arenaX0 + lv.arenaX1) / 2 - 28, y: 130, w: 56, h: 34, vx: 0, vy: 0, state: 'idle', t: 0, hp: 4, max: 4, inv: 0, anim: 0, phase2: false, stormed: false };
 }
@@ -44,7 +54,7 @@ function puff(x, y, n = 6, col = '#ffffff') { for (let i = 0; i < n; i++) addPar
 const safe = p => p.inv > 0 || p.dashInv > 0;
 function killPlayer(bounce) {
   const p = G.p; if (p.dead) return;
-  p.dead = true; p.deadT = 0; p.fell = !bounce; p.vy = bounce ? -10 : 0; p.vx = 0; p.pound = false; p.dashT = 0;
+  p.dead = true; p.deadT = 0; p.fell = !bounce; p.vy = bounce ? -10 : 0; p.vx = 0; p.pound = false; p.dashT = 0; p.rollT = 0;
   G.deaths++; SFX.die(); haptic(80);
 }
 function respawn() {
@@ -86,10 +96,11 @@ function bumpBlock(tx, ty) {
 // =====================================================================
 // Bosses
 // =====================================================================
+const BOSS_COL = { spider: '#e94b5a', snowman: '#ffffff', snake: '#7cf07a', ape: '#ff9a1f' };
 function hurtBoss(dmg) {
   const B = G.boss; if (!B || B.inv > 0 || ['dead', 'intro', 'idle'].includes(B.state)) return false;
   B.hp -= dmg; B.inv = 45; G.shake = 8; SFX.bossHit(); haptic(40);
-  puff(B.x + B.w / 2, B.y + B.h / 2, 8, B.type === 'spider' ? '#e94b5a' : '#ffffff');
+  puff(B.x + B.w / 2, B.y + B.h / 2, 8, BOSS_COL[B.type]);
   if (!B.phase2 && B.hp > 0 && B.hp <= B.max / 2) { B.phase2 = true; G.banner = { key: 'ab_' + B.type, t: 0 }; }
   if (B.hp <= 0) { B.state = 'dead'; B.t = 0; B.vy = -3; G.haz = []; }
   else if (B.type === 'spider' && B.state === 'ground') { B.state = 'rise'; B.t = 0; }
@@ -119,7 +130,17 @@ function updateBoss() {
     } else return;
   }
   B.t++; B.anim += 0.2; if (B.inv > 0) B.inv--;
-  if (B.type === 'spider') updateSpider(B, p, lv); else updateSnowman(B, p, lv);
+  ({ spider: updateSpider, snowman: updateSnowman, snake: updateSnake, ape: updateApe })[B.type](B, p, lv);
+}
+// Every boss jump is planned at take-off so the landing spot is known in advance:
+// the renderer shows a red marker there (B.landX = centre of the landing spot).
+function planJump(B, lv, targetCx, vy0, g, maxVx) {
+  let y = 0, vy = vy0, n = 0;
+  do { vy += g; y += vy; n++; } while (y < 0);          // frames until back on the ground (same steps as the update)
+  const lo = lv.arenaX0 + 8, hi = lv.arenaX1 - B.w - 8;
+  const tx = Math.max(lo, Math.min(hi, targetCx - B.w / 2));
+  B.jvy = vy0; B.jg = g; B.jvx = Math.max(-maxVx, Math.min(maxVx, (tx - B.x) / n));
+  B.landX = Math.max(lo, Math.min(hi, B.x + B.jvx * n)) + B.w / 2;
 }
 
 // ---------- the Moonweaver (spider) ----------
@@ -188,12 +209,12 @@ function updateSnowman(B, p, lv) {
       const per = f ? 55 : 85;
       if (B.t % per === per - 1 && !p.dead) { throwSnowball(B, p); B.throwT = 14; }
       if (f && B.t % 110 === 60) spawnIcicles(p, lv);
-      if (B.t > (f ? 200 : 250)) { B.state = 'crouch'; B.t = 0; }
+      if (B.t > (f ? 200 : 250)) { B.state = 'crouch'; B.t = 0; planJump(B, lv, px, -13, 0.5, 6); }
       break;
     }
-    case 'crouch': if (B.t > 30) { B.state = 'air'; B.t = 0; B.vy = -13; B.vx = Math.max(-6, Math.min(6, (px - cx) / 55)); } break;
+    case 'crouch': if (B.t > 30) { B.state = 'air'; B.t = 0; B.vy = B.jvy; B.vx = B.jvx; } break;
     case 'air':
-      B.vy += 0.5; B.x += B.vx; B.y += B.vy;
+      B.vy += B.jg; B.x += B.vx; B.y += B.vy;
       if (B.y >= groundY) {
         B.y = groundY; B.vy = 0; B.state = 'stunned'; B.t = 0; G.shake = 14; haptic(50); SFX.stomp(); puff(cx, 11 * TS, 12, '#ffffff');
         if (f) spawnIcicles(p, lv);
@@ -210,8 +231,89 @@ function updateSnowman(B, p, lv) {
   bossContact(B, p, 18);
 }
 
+// ---------- Venomcoil (forest snake) ----------
+// Sways with its head up, then dips to the ground and spits poison blobs that
+// slide along the floor (jump over them). After two volleys it slithers to the
+// other side of the arena and rests, dizzy. Phase 2: VENOM BARRAGE (3 faster blobs).
+const SNAKE_HIGH = 11 * TS - 130, SNAKE_LOW = 11 * TS - 32;
+function spitVenom(B) {
+  G.haz.push({ type: 'venom', x: B.face > 0 ? B.x + B.w - 4 : B.x - 12, y: 11 * TS - 28, w: 22, h: 13, vx: B.face * (B.phase2 ? 4.4 : 3.4), vy: 0, life: 400 });
+  SFX.hiss();
+}
+function updateSnake(B, p, lv) {
+  const cx = B.x + B.w / 2, px = p.x + p.w / 2, f = B.phase2, mid = (lv.arenaX0 + lv.arenaX1) / 2;
+  if (!['slither', 'dead'].includes(B.state)) B.face = px < cx ? -1 : 1;
+  switch (B.state) {
+    case 'intro': B.y += (SNAKE_HIGH - B.y) * 0.05; if (B.t % 20 === 0) SFX.hiss(); if (B.t > 80) { B.state = 'sway'; B.t = 0; } break;
+    case 'sway':
+      B.y += (SNAKE_HIGH + Math.sin(B.t * 0.08) * 8 - B.y) * 0.15;
+      if (B.t > (f ? 40 : 60)) { B.state = 'dip'; B.t = 0; B.shots = 0; }
+      break;
+    case 'dip': {
+      const n = f ? 3 : 2, gap = f ? 22 : 34;
+      B.y += (SNAKE_LOW - B.y) * 0.25;
+      if (B.t >= 18 && (B.t - 18) % gap === 0 && B.shots < n && !p.dead) { spitVenom(B); B.shots++; }
+      if (B.t > 18 + n * gap) { B.volleys++; B.t = 0; B.state = B.volleys >= 2 ? 'slither' : 'sway'; if (B.state === 'slither') { B.volleys = 0; B.goal = cx > mid ? lv.arenaX0 + 60 : lv.arenaX1 - 60 - B.w; } }
+      break;
+    }
+    case 'slither': {
+      B.y += (SNAKE_LOW - B.y) * 0.2;
+      const d = B.goal - B.x, sp = f ? 3.6 : 2.6;
+      B.face = Math.sign(d) || B.face; B.x += Math.max(-sp, Math.min(sp, d)); B.anim += 0.2;
+      if (Math.abs(d) < 1) { B.state = 'rest'; B.t = 0; }
+      break;
+    }
+    case 'rest': B.y += (SNAKE_LOW + 4 - B.y) * 0.2; if (B.t > (f ? 60 : 80)) { B.state = 'sway'; B.t = 0; } break;
+    case 'dead':
+      B.y += 1.2;
+      if (B.t % 5 === 0) puff(B.x + Math.random() * B.w, 11 * TS - 10, 3, '#7cf07a');
+      if (B.t > 90) { puff(cx, 11 * TS - 10, 20, '#3fa34a'); G.boss = null; openGate(); }
+      return;
+  }
+  B.x = Math.max(lv.arenaX0 + 8, Math.min(lv.arenaX1 - B.w - 8, B.x));
+  bossContact(B, p, 12);
+}
+
+// ---------- Cinderback (feral lava ape) ----------
+// Leaps at you again and again (landing spot marked), rests after three leaps.
+// Phase 2: LAVA BOMBS — at the top of every leap he hurls three bombs that land
+// around you (their spots are marked too) before he comes down himself.
+function throwLavaBombs(B, p, lv) {
+  const sx = B.x + B.w / 2, sy = B.y + 16, px = p.x + p.w / 2, g = 0.3;
+  for (const off of [0, -90 - Math.random() * 60, 90 + Math.random() * 60]) {
+    const tx = Math.max(lv.arenaX0 + 30, Math.min(lv.arenaX1 - 30, px + off)), tt = 44 + ((Math.random() * 12) | 0);
+    // discrete steps (vy += g; y += vy) so the bomb's centre reaches the ground exactly at landX
+    G.haz.push({ type: 'bomb', x: sx - 7, y: sy - 7, w: 14, h: 14, vx: (tx - sx) / tt, vy: (11 * TS - sy - g * tt * (tt + 1) / 2) / tt, g, life: 300, landX: tx });
+  }
+  SFX.lava();
+}
+function updateApe(B, p, lv) {
+  const groundY = 11 * TS - B.h, cx = B.x + B.w / 2, px = p.x + p.w / 2, f = B.phase2;
+  if (B.state !== 'air' && B.state !== 'dead') B.face = px < cx ? -1 : 1;
+  switch (B.state) {
+    case 'intro': if (B.t % 16 === 0) { G.shake = 5; SFX.bump(); } if (B.t === 40) SFX.roar(); if (B.t > 90) { B.state = 'idle'; B.t = 0; } break;
+    case 'idle': if (B.t > (f ? 14 : 28) && !p.dead) { B.state = 'crouch'; B.t = 0; planJump(B, lv, px, f ? -15 : -14, 0.6, 9); } break;
+    case 'crouch': if (B.t > (f ? 18 : 26)) { B.state = 'air'; B.t = 0; B.vy = B.jvy; B.vx = B.jvx; B.thrown = false; SFX.jump(); } break;
+    case 'air':
+      B.vy += B.jg; B.x += B.vx; B.y += B.vy;
+      if (f && !B.thrown && B.vy >= 0) { B.thrown = true; throwLavaBombs(B, p, lv); }
+      if (B.y >= groundY) {
+        B.y = groundY; B.vy = 0; B.vx = 0; B.t = 0; G.shake = 14; haptic(50); SFX.slam(); puff(cx, 11 * TS, 12, '#5b4a3a');
+        B.state = ++B.jumps >= 3 ? 'tired' : 'idle'; if (B.state === 'tired') B.jumps = 0;
+      }
+      break;
+    case 'tired': if (B.t > (f ? 70 : 90)) { B.state = 'idle'; B.t = 0; } break;
+    case 'dead':
+      if (B.t % 5 === 0) puff(B.x + Math.random() * B.w, B.y + Math.random() * B.h, 3, '#ff9a1f');
+      if (B.t > 100) { puff(cx, B.y + B.h / 2, 20, '#5b4a3a'); G.boss = null; openGate(); }
+      return;
+  }
+  B.x = Math.max(lv.arenaX0 + 8, Math.min(lv.arenaX1 - B.w - 8, B.x));
+  bossContact(B, p, 16);
+}
+
 // =====================================================================
-// Projectiles: hazards (webs, snowballs, icicles) and Ays' spit shots
+// Projectiles: hazards (webs, snowballs, icicles, venom, lava bombs) and Ays' spit shots
 // =====================================================================
 function updateHaz() {
   const p = G.p, lv = G.lv;
@@ -224,13 +326,18 @@ function updateHaz() {
     } else {
       if (h.g) h.vy += h.g;
       h.x += h.vx; h.y += h.vy;
-      if (isSolid(lv, Math.floor((h.x + h.w / 2) / TS), Math.floor((h.y + h.h / 2) / TS))) { h.life = 0; puff(h.x + 6, h.y + 6, 3, h.type === 'web' ? '#e4e8ee' : '#ffffff'); }
+      if (h.type === 'venom' && T % 4 === 0) addPart({ x: h.x + h.w / 2 - Math.sign(h.vx) * 8, y: h.y + h.h, vy: 0.5, life: 14, max: 14, col: '#7cf07a', type: 'spark' });
+      if (isSolid(lv, Math.floor((h.x + h.w / 2) / TS), Math.floor((h.y + h.h / 2) / TS))) {
+        h.life = 0; puff(h.x + h.w / 2, h.y + h.h / 2, 3, HAZ_COL[h.type]);
+        if (h.type === 'bomb') { SFX.bump(); for (let i = 0; i < 6; i++) addPart({ x: h.x + 7, y: 11 * TS - 4, vx: (Math.random() - 0.5) * 5, vy: -2 - Math.random() * 4, g: 0.3, life: 30, max: 30, col: i % 2 ? '#ff9a1f' : '#ffd23a', type: 'spark' }); }
+      }
     }
     if (h.life > 0 && !p.dead && !G.clear && !safe(p) && overlap(p, h)) { h.life = 0; killPlayer(true); }
   }
   G.haz = G.haz.filter(h => h.life > 0);
 }
-function smashHazard(h) { if (h.type === 'ice' && h.warn > 0) return false; h.life = 0; puff(h.x + 6, h.y + 6, 4, h.type === 'web' ? '#e4e8ee' : '#ffffff'); return true; }
+const HAZ_COL = { web: '#e4e8ee', snow: '#ffffff', ice: '#ffffff', venom: '#7cf07a', bomb: '#ff9a1f' };
+function smashHazard(h) { if (h.type === 'ice' && h.warn > 0) return false; h.life = 0; puff(h.x + h.w / 2, h.y + h.h / 2, 4, HAZ_COL[h.type]); return true; }
 function updateShots() {
   const lv = G.lv;
   for (const s of G.shots) {
@@ -259,7 +366,23 @@ function swingHits(p) {
     if (tl === 'B') breakBrick(tx, ty); else if (tl === '?') popCoinBlock(tx, ty);
   }
 }
-// Kerim's SHOCK SLAM: a shockwave that hits everything around the landing spot
+// Capybara AIR DASH + Cheemus' BEAR ROLL: invincible (p.dashInv) and everything
+// touched takes a hit — enemies die, hazards break, a boss takes 1 damage per dash.
+const dashing = p => p.dashT > 0 || p.rollT > 0;
+function dashStrike(p) {
+  const hb = { x: p.x - 4, y: p.y - 2, w: p.w + 8, h: p.h + 4 };
+  for (const e of G.lv.enemies) if (e.alive && overlap(hb, e)) { killEnemy(e, true); SFX.clang(); }
+  for (const h of G.haz) if (h.life > 0 && overlap(hb, h)) smashHazard(h);
+  if (G.boss && !p.dashHit && overlap(hb, G.boss) && hurtBoss(1)) p.dashHit = true;
+}
+// dashing / rolling into a wall breaks bricks and pops star blocks in front
+function dashBreak(p) {
+  const lv = G.lv, tx = p.face > 0 ? Math.floor((p.x + p.w + 1) / TS) : Math.floor((p.x - 1) / TS);
+  for (let ty = Math.floor(p.y / TS); ty <= Math.floor((p.y + p.h - 0.01) / TS); ty++) {
+    const tl = tileAt(lv, tx, ty); if (tl === 'B') breakBrick(tx, ty); else if (tl === '?') popCoinBlock(tx, ty);
+  }
+}
+// Fred's SHOCK SLAM: a shockwave that hits everything around the landing spot
 function shockSlam(p) {
   const cx = p.x + p.w / 2, gy = p.y + p.h, R = 150;
   G.shake = 14; haptic(60); SFX.slam();
@@ -299,8 +422,13 @@ function updateGame() {
     if (p.pound) p.poundT++;
     if (ch.special === 'dash' && hit.action && !p.onGround && p.canDash && p.dashT <= 0) {
       const d = ((held.right ? 1 : 0) - (held.left ? 1 : 0)) || p.face;
-      p.face = d; p.dashT = 13; p.dashInv = 31; p.canDash = false; p.vx = d * 10.5; p.vy = 0; SFX.dash();
+      p.face = d; p.dashT = 13; p.dashInv = 31; p.dashHit = false; p.canDash = false; p.vx = d * 10.5; p.vy = 0; SFX.dash();
     }
+    if (ch.special === 'roll' && hit.action && p.onGround && p.rollT <= 0 && p.rollCd <= 0) {
+      const d = ((held.right ? 1 : 0) - (held.left ? 1 : 0)) || p.face;
+      p.face = d; p.rollT = 26; p.rollCd = 50; p.dashInv = 32; p.dashHit = false; p.vx = d * 8; SFX.roll();
+    }
+    if (p.rollCd > 0) p.rollCd--;
     if (ch.special === 'swing' && hit.action && p.swingCd <= 0) { p.swingT = 18; p.swingCd = 26; p.swingHit = false; SFX.swing(); }
     if (p.swingT > 0) { p.swingT--; if (p.swingT <= 14 && p.swingT >= 5) swingHits(p); }
     if (p.swingCd > 0) p.swingCd--;
@@ -317,7 +445,10 @@ function updateGame() {
     const fr = (p.onGround ? ch.friction : ch.airFriction) * iceK, acc = (p.onGround ? ch.accel : ch.airAccel) * (iceK < 1 ? 0.45 : 1);
     if (p.dashT > 0) {
       p.dashT--;
-      if (p.dashT % 2 === 0) addPart({ x: p.x + p.w / 2, y: p.y + p.h / 2, life: 14, max: 14, size: 10, col: '#fff0a8', type: 'puff' });
+      // wind streaks behind the capybara (white / pale, no coloured trail)
+      for (let i = 0; i < 2; i++) addPart({ x: p.x + p.w / 2 - p.face * (8 + Math.random() * 14), y: p.y + 4 + Math.random() * (p.h - 8), vx: p.face * 2, life: 12, max: 12, size: 14 + Math.random() * 18, col: i ? '#ffffff' : '#d6f2ff', type: 'wind', dir: p.face });
+    } else if (p.rollT > 0) {
+      p.rollT--; p.vx = p.face * 8; p.rollA += p.face * 0.32;   // no trail: the bear just rolls
     } else {
       const dir = p.pound ? 0 : (held.right ? 1 : 0) - (held.left ? 1 : 0);
       if (dir) {
@@ -344,6 +475,10 @@ function updateGame() {
     p.prevBottom = p.y + p.h;
     const r = moveBody(p, lv, bumpBlock);
     p.onGround = r.landed;
+    if (dashing(p)) {
+      if (r.hitX) { dashBreak(p); if (p.rollT > 0) { p.rollT = 0; SFX.bump(); G.shake = 4; } }
+      dashStrike(p);
+    }
     if (r.landed) {
       p.canDash = true;
       const fy = Math.floor((p.y + p.h + 1) / TS);
@@ -367,6 +502,7 @@ function updateGame() {
       const tl = tileAt(lv, tx, ty);
       if (tl === 'o') { lv.g[ty][tx] = '.'; collectCoin(tx * TS + 20, ty * TS + 20); }
       else if (tl === '^' && !safe(p) && overlap(p, { x: tx * TS + 6, y: ty * TS + 20, w: 28, h: 20 })) killPlayer(true);
+      else if (tl === '~' && !safe(p) && overlap(p, { x: tx * TS + 4, y: ty * TS + 14, w: 32, h: 26 })) { killPlayer(true); puff(p.x + p.w / 2, ty * TS + 14, 8, '#ff9a1f'); }
     }
     if (p.y > lv.H * TS + 40) killPlayer(false);
 
@@ -391,13 +527,13 @@ function updateGame() {
     else if (r.landed) {
       const front = pv > 0 ? Math.floor((e.x + e.w + 1) / TS) : Math.floor((e.x - 1) / TS);
       const below = Math.floor((e.y + e.h + 1) / TS), at = Math.floor((e.y + e.h - 1) / TS);
-      if (!isSolid(lv, front, below) || tileAt(lv, front, at) === '^') e.vx = -pv;
+      if (!isSolid(lv, front, below) || '^~'.includes(tileAt(lv, front, at))) e.vx = -pv;
     }
     if (e.y > lv.H * TS + 100) e.alive = false;
     e.anim += 0.18;
     p = G.p;
     if (!p.dead && !G.clear && overlap(p, e)) {
-      if (p.pound) { killEnemy(e, true); }
+      if (p.pound || dashing(p)) { killEnemy(e, true); }
       else if (p.vy >= 0 && p.prevBottom <= e.y + 10) {
         killEnemy(e, false); p.y = e.y - p.h; p.canDash = true;
         p.vy = held.jump ? -ch.jump * 0.95 : -7.5;

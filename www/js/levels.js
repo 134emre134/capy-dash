@@ -100,10 +100,72 @@ function buildLevel3() {
   return finishLevel({ W, H, g, theme: 2, spawnX: 2 * TS, startX: 5 * TS, checkX: 110 * TS, finishX: 153 * TS, flies: [], boss: 'snowman', arenaX0: 120 * TS, arenaX1: 144 * TS },
     [[12, 11], [27, 11], [33, 11], [55, 11], [58, 11], [62, 11], [76, 11], [89, 11], [98, 11], [107, 11], [115, 11]]);
 }
+function buildLevel4() {      // forest
+  const W = 162, H = 13, { g, set, fill } = grid(W, H);
+  fill(0, W - 1, 11, 12, '#');
+  [[16, 18], [37, 40], [62, 64], [84, 87], [104, 106]].forEach(([a, b]) => fill(a, b, 11, 12, '.'));
+  fill(0, 0, 0, 10, 'X'); fill(W - 1, W - 1, 0, 10, 'X');
+  fill(8, 10, 9, 9, 'o');
+  set(12, 7, '?'); fill(13, 14, 7, 7, 'B'); set(15, 7, '?');
+  fill(16, 18, 8, 8, 'o');
+  fill(22, 23, 9, 10, 'X'); fill(22, 23, 7, 7, 'o');            // tree stump
+  fill(27, 29, 10, 10, '^'); fill(27, 29, 7, 7, 'o');           // thorns
+  fill(32, 35, 8, 8, 'B'); set(34, 8, '?'); fill(32, 35, 7, 7, 'o');
+  fill(38, 39, 9, 9, 'X'); fill(37, 40, 7, 7, 'o');            // stepping stone over the wide pit
+  for (let i = 0; i < 3; i++) fill(44 + i, 44 + i, 10 - i, 10, 'X');
+  fill(47, 48, 8, 10, 'X');
+  fill(50, 53, 6, 6, 'B'); set(52, 6, '?'); fill(50, 53, 5, 5, 'o');
+  fill(56, 58, 10, 10, '^');
+  fill(62, 64, 8, 8, 'o');
+  fill(68, 69, 9, 10, 'X'); fill(70, 71, 10, 10, '^'); fill(72, 73, 8, 10, 'X'); fill(74, 75, 10, 10, '^'); fill(76, 77, 7, 10, 'X');
+  set(68, 7, 'o'); set(72, 6, 'o'); set(76, 5, 'o');
+  fill(85, 86, 9, 9, 'X'); fill(84, 87, 7, 7, 'o');
+  set(92, 7, '?'); set(93, 7, 'B'); set(94, 7, '?');
+  fill(98, 99, 10, 10, '^'); fill(98, 99, 8, 8, 'o');
+  fill(104, 106, 8, 8, 'o');
+  // boss arena 120..143, exit gate at 144
+  fill(125, 127, 8, 8, 'X'); fill(136, 138, 8, 8, 'X');
+  fill(144, 144, 0, 10, 'G');
+  fill(147, 149, 9, 9, 'o');
+  return finishLevel({ W, H, g, theme: 3, spawnX: 2 * TS, startX: 5 * TS, checkX: 108 * TS, finishX: 153 * TS, flies: [], boss: 'snake', arenaX0: 120 * TS, arenaX1: 144 * TS },
+    [[11, 11], [25, 11], [34, 11], [51, 6], [60, 11], [80, 11], [90, 11], [96, 11], [110, 11], [115, 11]]);
+}
+function buildLevel5() {      // lava ('~' = lava: pits are filled with it, puddles kill like spikes)
+  const W = 162, H = 13, { g, set, fill } = grid(W, H);
+  fill(0, W - 1, 11, 12, '#');
+  [[19, 21], [41, 43], [63, 66], [86, 88], [101, 103]].forEach(([a, b]) => fill(a, b, 11, 12, '~'));
+  fill(0, 0, 0, 10, 'X'); fill(W - 1, W - 1, 0, 10, 'X');
+  fill(8, 10, 9, 9, 'o');
+  set(13, 7, '?'); set(14, 7, 'B'); set(15, 7, '?');
+  fill(19, 21, 8, 8, 'o');
+  fill(25, 26, 8, 10, 'X'); fill(25, 26, 6, 6, 'o');
+  fill(30, 32, 10, 10, '^'); fill(30, 32, 7, 7, 'o');
+  fill(35, 38, 8, 8, 'B'); set(36, 8, '?'); fill(35, 38, 7, 7, 'o');
+  fill(41, 43, 7, 7, 'o');
+  for (let i = 0; i < 4; i++) fill(47 + i, 47 + i, 10 - i, 10, 'X');
+  fill(51, 51, 7, 10, 'X'); fill(52, 53, 5, 5, 'o');
+  fill(55, 57, 10, 10, '^');
+  fill(64, 65, 9, 9, 'X'); fill(63, 66, 7, 7, 'o');            // stepping stone over the wide lava pit
+  fill(70, 71, 9, 10, 'X'); fill(72, 74, 10, 10, '~'); fill(75, 76, 8, 10, 'X');
+  set(70, 7, 'o'); set(73, 7, 'o'); set(75, 6, 'o');
+  fill(80, 83, 7, 7, 'B'); set(81, 7, '?'); fill(80, 83, 6, 6, 'o');
+  fill(86, 88, 8, 8, 'o');
+  set(92, 7, '?'); set(93, 7, 'B'); set(94, 7, '?');
+  fill(97, 98, 10, 10, '^');
+  fill(101, 103, 7, 7, 'o');
+  // boss arena 120..143, exit gate at 144
+  fill(124, 126, 7, 7, 'X'); fill(137, 139, 7, 7, 'X');
+  fill(144, 144, 0, 10, 'G');
+  fill(147, 149, 9, 9, 'o');
+  return finishLevel({ W, H, g, theme: 4, spawnX: 2 * TS, startX: 5 * TS, checkX: 110 * TS, finishX: 153 * TS, flies: [], boss: 'ape', arenaX0: 120 * TS, arenaX1: 144 * TS },
+    [[12, 11], [23, 11], [28, 11], [34, 11], [45, 11], [53, 11], [59, 11], [68, 11], [79, 11], [91, 11], [107, 11], [115, 11]]);
+}
 const LEVELS = [
   { key: 'l1', theme: 0, par: 60, build: buildLevel1 },
   { key: 'l2', theme: 1, par: 120, build: buildLevel2 },
-  { key: 'l3', theme: 2, par: 130, build: buildLevel3 }
+  { key: 'l3', theme: 2, par: 130, build: buildLevel3 },
+  { key: 'l4', theme: 3, par: 125, build: buildLevel4 },
+  { key: 'l5', theme: 4, par: 135, build: buildLevel5 }
 ];
 function tileAt(lv, tx, ty) { if (tx < 0 || tx >= lv.W) return 'X'; if (ty < 0 || ty >= lv.H) return '.'; return lv.g[ty][tx]; }
 function isSolid(lv, tx, ty) { return SOLID.has(tileAt(lv, tx, ty)); }

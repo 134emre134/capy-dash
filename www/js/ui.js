@@ -53,10 +53,30 @@ function snowPeaks(cam) {
     if (top < snowLine) { X.fillStyle = '#ffffff'; X.fillRect(sx, top, PX * 2, snap(snowLine - top + ((w * 7) % 3) * 6)); }
   }
 }
+// forest: a row of round-canopy trees with parallax
+function trees(cam, par, base, sp, canopy, trunk) {
+  const off = ((snap(cam * par) % sp) + sp) % sp;
+  for (let x = -off - sp; x < VW + sp; x += sp) {
+    X.fillStyle = trunk; X.fillRect(snap(x + sp * 0.5 - 8), base - 40, 16, VH);
+    el(x + sp * 0.5, base - 70, sp * 0.42, 52, canopy); el(x + sp * 0.28, base - 40, sp * 0.3, 34, canopy); el(x + sp * 0.72, base - 44, sp * 0.3, 36, canopy);
+  }
+}
+// lava: distant volcanoes with glowing craters and lava streams
+function volcanoes(cam) {
+  for (let sx = 0; sx < VW; sx += PX * 2) {
+    const w = sx + snap(cam * 0.06), m = ((w % 1100) + 1100) % 1100, d = Math.abs(m - 550);
+    const h = Math.max(d < 40 ? 272 : 300 - d * 0.7, 70), top = snap(VH - 110 - h);
+    X.fillStyle = '#3a1e22'; X.fillRect(sx, top, PX * 2, VH - top);
+    if (d < 40) { X.fillStyle = '#ff9a1f'; X.fillRect(sx, top, PX * 2, 4); }
+    if (d < 70 && ((w >> 3) % 4) === 0) { X.fillStyle = '#e94b5a'; X.fillRect(sx, top + 4, PX * 2, snap(60 + (d % 7) * 10)); }
+  }
+}
+const SKY = [['#4aa8e0', '#62bdf0', '#8ad0f5', '#b2e2fa', '#d6f2ff'], ['#141826', '#1b1530', '#251e3f', '#2a2140', '#3a2f5c'],
+  ['#7f9cc8', '#95b0d6', '#adc4e2', '#c6d8ee', '#dfeaf7'], ['#7fc8c0', '#95d4c8', '#addfcf', '#c6ead8', '#dff4e4'], ['#1c1014', '#2a141a', '#3d1a1e', '#5a2020', '#7a2a1e']];
 function drawSky(cam, theme) {
-  const bands = theme === 1 ? ['#141826', '#1b1530', '#251e3f', '#2a2140', '#3a2f5c']
-    : theme === 2 ? ['#7f9cc8', '#95b0d6', '#adc4e2', '#c6d8ee', '#dfeaf7'] : ['#4aa8e0', '#62bdf0', '#8ad0f5', '#b2e2fa', '#d6f2ff'];
-  bands.forEach((c, i) => { X.fillStyle = c; X.fillRect(0, i * 70, VW, i === 4 ? VH : 70); });
+  SKY[theme].forEach((c, i) => { X.fillStyle = c; X.fillRect(0, i * 70, VW, i === 4 ? VH : 70); });
+  if (theme === 3) { trees(cam, 0.1, VH - 190, 180, '#9ccc9a', '#78b080'); trees(cam, 0.25, VH - 120, 240, '#4a7a55', '#2f5a3a'); return; }
+  if (theme === 4) { volcanoes(cam); hills(cam, 0.2, VH - 150, 30, 12, '#2a1418'); hills(cam, 0.35, VH - 110, 32, 14, '#3a2226'); return; }
   if (theme === 1) {
     for (const s of STARS) if (Math.sin(T * 0.05 + s.p) > -0.4) { const x = ((s.x - cam * 0.03) % VW + VW) % VW; X.fillStyle = s.b ? '#ffffff' : '#fff0a8'; X.fillRect(snap(x), snap(s.y), PX * (s.b ? 2 : 1), PX * (s.b ? 2 : 1)); }
     el(VW - 130, 92, 34, 34, '#fff6c9'); el(VW - 144, 82, 6, 6, '#d9d9e0'); el(VW - 120, 104, 8, 8, '#d9d9e0'); el(VW - 116, 78, 4, 4, '#d9d9e0');
@@ -66,6 +86,19 @@ function drawSky(cam, theme) {
   for (const c of CLOUDS) { const x = ((c.x - cam * 0.1 - T * 0.15) % span + span) % span - 200; if (x < VW + 100) drawSpr(cl, x + 40, c.y + 24, 1, c.s); }
   if (theme === 2) { hills(cam, 0.2, VH - 150, 30, 12, '#c6d8ee'); hills(cam, 0.35, VH - 110, 32, 14, '#e8f1fa'); }
   else { hills(cam, 0.15, VH - 170, 45, 18, theme === 1 ? '#1f2a44' : '#a3d7c6'); hills(cam, 0.35, VH - 110, 32, 14, theme === 1 ? '#2e3d5c' : '#78c48b'); }
+}
+// lava: embers drifting up; forest: falling leaves (both reuse the snow flakes)
+function embers(cam) {
+  for (const f of FLAKES) {
+    const x = (((f.x + Math.sin(T * 0.03 + f.p) * 14 - cam * 0.25) % VW) + VW) % VW, y = VH - (f.y + T * f.v * 0.8) % VH;
+    X.fillStyle = f.s > 1 ? '#ffd23a' : '#ff9a1f'; X.fillRect(snap(x), snap(y), PX * f.s, PX);
+  }
+}
+function leaves(cam) {
+  for (let i = 0; i < FLAKES.length; i += 3) {
+    const f = FLAKES[i], x = (((f.x + Math.sin(T * 0.02 + f.p) * 30 - cam * 0.3) % VW) + VW) % VW, y = (f.y + T * f.v * 0.5) % VH;
+    X.fillStyle = i % 2 ? '#ff9a1f' : '#4fc04c'; X.fillRect(snap(x), snap(y), PX * 2, PX); X.fillRect(snap(x) + PX, snap(y) + PX, PX * 2, PX);
+  }
 }
 function snowfall(cam) {
   X.fillStyle = '#ffffff';
@@ -83,11 +116,28 @@ function drawTile(lv, tl, tx, ty) {
   if (tl === '#') img = S['g' + (SOLID.has(tileAt(lv, tx, ty - 1)) ? 0 : 1) + ((tx * 7 + ty * 3) % 3)];
   else if (tl === '?') img = S['Q' + (Math.floor(T / 30) % 2)];
   else if (tl === 'o') { drawSpr(COIN[COIN_SEQ[Math.floor(T * 0.12 + tx * 0.7) % 4]], x + 20, y + 31); return; }
+  else if (tl === '~') { drawLava(x, y, tileAt(lv, tx, ty - 1) !== '~'); return; }
   else img = S[tl];
   if (img) X.drawImage(img, x, y, TS, TS);
 }
 
+function drawLava(x, y, top) {
+  const s = top ? 12 : 0;
+  X.fillStyle = '#e94b5a'; X.fillRect(x, y + s, TS, TS - s);
+  if (!top) { X.fillStyle = '#ff9a1f'; X.fillRect(x + 8 + snap(Math.sin(T * 0.05 + x) * 6), y + 16, 6, 4); return; }
+  for (let i = 0; i < TS; i += 4) {
+    const wy = y + s + snap(Math.sin((x + i) * 0.12 + T * 0.08) * 3);
+    X.fillStyle = '#ffd23a'; X.fillRect(x + i, wy, 4, 4); X.fillStyle = '#ff9a1f'; X.fillRect(x + i, wy + 4, 4, 6);
+  }
+}
+
 // ---------- characters, enemies, bosses, projectiles ----------
+// red landing marker on the ground: big for a boss jump, small for a falling projectile
+function landMark(cx, big = true) {
+  X.fillStyle = '#e94b5a';
+  if (big) { X.fillRect(snap(cx - 40), 11 * TS - 6, 80, 4); X.fillRect(snap(cx - 28), 11 * TS - 10, 56, 4); }
+  else X.fillRect(snap(cx - 16), 11 * TS - 6, 32, 4);
+}
 function heroFrame(p) { if (!p.onGround) return 'air'; if (Math.abs(p.vx) > 0.3) return Math.floor(p.anim) % 2 ? 'walk' : 'stand'; return 'stand'; }
 function drawHero(id, cx, bottom, face, frame = 'stand', sc = 1) { drawSpr(HERO[id][frame], cx, bottom, face, sc); }
 function drawPan(cx, bottom, face, swingT, sc = 1) {
@@ -98,15 +148,16 @@ function drawPan(cx, bottom, face, swingT, sc = 1) {
   if (swingT >= 5 && swingT <= 14) for (const [rad, col] of [[52, '#ffffff'], [40, '#d6f2ff']]) { X.fillStyle = col; for (let a = -1.8; a <= ang; a += 0.16) X.fillRect(snap(hx + face * Math.cos(a) * rad * sc), snap(hy + Math.sin(a) * rad * sc), 4, 4); }
 }
 function drawBeetle(e, theme) {
-  const cx = e.x + e.w / 2, by = e.y + e.h, d = e.vx >= 0 ? 1 : -1, frost = theme === 2;
-  if (!e.alive && !e.flipped) { drawSpr(frost ? BEETLE_FROST_FLAT : BEETLE_FLAT, cx, by, d); return; }
+  const cx = e.x + e.w / 2, by = e.y + e.h, d = e.vx >= 0 ? 1 : -1;
+  const [walk, flat] = theme === 2 ? [BEETLE_FROST, BEETLE_FROST_FLAT] : theme === 4 ? [BEETLE_LAVA, BEETLE_LAVA_FLAT] : [BEETLE, BEETLE_FLAT];
+  if (!e.alive && !e.flipped) { drawSpr(flat, cx, by, d); return; }
   if (e.flipped) { X.save(); X.translate(snap(cx), snap(by - e.h / 2)); X.scale(1, -1); X.translate(-snap(cx), -snap(by - e.h / 2)); }
-  drawSpr((frost ? BEETLE_FROST : BEETLE)[Math.floor(e.anim) % 2], cx, by, d);
+  drawSpr(walk[Math.floor(e.anim) % 2], cx, by, d);
   if (e.flipped) X.restore();
 }
 function drawSpider(B) {
   const cx = B.x + B.w / 2, flash = (B.inv > 0 && Math.floor(B.inv / 3) % 2 === 0) || (B.state === 'charge' && B.t % 6 < 3);
-  if ((B.state === 'warn' && Math.floor(B.t / 4) % 2) || B.state === 'drop') { X.fillStyle = '#e94b5a'; X.fillRect(snap(cx - 40), 11 * TS - 6, 80, 4); X.fillRect(snap(cx - 28), 11 * TS - 10, 56, 4); }
+  if ((B.state === 'warn' && Math.floor(B.t / 4) % 2) || B.state === 'drop') landMark(cx);
   if (B.state !== 'ground' && B.state !== 'dead') { X.fillStyle = '#d9d9e0'; X.fillRect(snap(cx), 0, PX, snap(B.y + 4)); }
   for (const s of [-1, 1]) for (let i = 0; i < 4; i++) {
     const ph = Math.sin(B.anim + i * 1.3 + (s > 0 ? 0 : 1.5)) * 5;
@@ -125,6 +176,7 @@ function drawSnowman(B) {
     X.fillStyle = '#b2e2fa'; X.fillRect(snap(cx - 30 - 30 * (1 - k)), bottom - 4, snap(60 + 60 * (1 - k)), 4);
     X.drawImage(SNOWMAN.r, snap(cx - w / 2), bottom - h, w, h); return;
   }
+  if ((B.state === 'crouch' && Math.floor(B.t / 4) % 2) || B.state === 'air') landMark(B.landX);
   const armY = B.y + 46;
   for (const s of [-1, 1]) {
     const up = s === B.face && B.throwT > 0 ? -30 : B.state === 'crouch' ? 8 : Math.round(Math.sin(B.anim + s) * 3);
@@ -135,12 +187,38 @@ function drawSnowman(B) {
   X.drawImage(flash ? SNOWMAN.f : SNOWMAN.r, snap(cx - w / 2), bottom - h, w, h);
   if (B.state === 'stunned') for (let i = 0; i < 3; i++) { const a = T * 0.12 + i * 2.1; X.fillStyle = '#ffd23a'; X.fillRect(snap(cx + Math.cos(a) * 26), snap(B.y - 14 + Math.sin(a) * 6), 6, 6); }
 }
+function drawSnake(B) {
+  const cx = B.x + B.w / 2, f = B.face, flash = B.inv > 0 && Math.floor(B.inv / 3) % 2 === 0;
+  // body: neck from the head down to the ground, then the tail wiggling along the floor (away from the face)
+  const hx = cx - f * 16, hy = B.y + B.h - 6, gy = 11 * TS - 12, pts = [];
+  for (let i = 0; i <= 8; i++) { const k = i / 8; pts.push([hx - f * 44 * k, hy + (gy - hy) * k * k, 15]); }
+  for (let i = 1; i <= 14; i++) pts.push([hx - f * (44 + i * 11), gy + Math.sin(i * 0.8 + B.anim) * 3, 14 - i * 0.6]);
+  for (const [x, y, r] of pts) el(x, y, r + 2, r + 2, flash ? '#ffffff' : '#1f4a2a');
+  pts.forEach(([x, y, r], i) => el(x, y, r, r, flash ? '#ffffff' : i % 3 ? '#3fa34a' : '#2f7a35'));
+  drawSpr(SNAKE_HEAD, cx, B.y + B.h, f, 2, flash);
+  if (B.state === 'rest') for (let i = 0; i < 3; i++) { const a = T * 0.12 + i * 2.1; X.fillStyle = '#ffd23a'; X.fillRect(snap(cx + Math.cos(a) * 26), snap(B.y - 10 + Math.sin(a) * 6), 6, 6); }
+}
+function drawApe(B) {
+  const cx = B.x + B.w / 2, bottom = B.y + B.h, w = APE.w * PX, flash = B.inv > 0 && Math.floor(B.inv / 3) % 2 === 0;
+  if ((B.state === 'crouch' && Math.floor(B.t / 4) % 2) || B.state === 'air') landMark(B.landX);
+  if (B.state === 'dead') {
+    const k = Math.max(0.1, 1 - B.t / 110), h = snap(APE.h * PX * k);
+    X.drawImage(APE.r, snap(cx - w / 2), bottom - h, w, h); return;
+  }
+  const sq = B.state === 'crouch' ? 0.84 : B.state === 'air' ? 1.08 : 1, h = snap(APE.h * PX * sq);
+  const shake = B.state === 'intro' || B.state === 'tired' ? (Math.floor(B.t / 4) % 2 ? 2 : -2) : 0;
+  X.drawImage(flash ? APE.f : APE.r, snap(cx - w / 2 + shake), bottom - h, w, h);
+  if (B.phase2 && !flash) { X.fillStyle = '#ff9a1f'; for (let i = 0; i < 3; i++) X.fillRect(snap(cx - 20 + i * 18), snap(B.y - 6 - ((T + i * 7) % 14)), 4, 4); }
+  if (B.state === 'tired') for (let i = 0; i < 3; i++) { const a = T * 0.12 + i * 2.1; X.fillStyle = '#ffd23a'; X.fillRect(snap(cx + Math.cos(a) * 30), snap(B.y - 14 + Math.sin(a) * 6), 6, 6); }
+}
 function drawHazards() {
   for (const h of G.haz) {
     if (h.type === 'web') drawSpr(WEB, h.x + 6, h.y + 12);
     else if (h.type === 'snow') drawSpr(SNOWBALL, h.x + 6, h.y + 12);
+    else if (h.type === 'venom') drawSpr(VENOM, h.x + h.w / 2, h.y + h.h, Math.sign(h.vx), 1.4);
+    else if (h.type === 'bomb') { if (Math.floor(T / 5) % 2) landMark(h.landX, false); drawSpr(LAVABOMB, h.x + h.w / 2, h.y + h.h); }
     else if (h.warn > 0) {
-      if (Math.floor(h.warn / 5) % 2) { X.fillStyle = '#e94b5a'; X.fillRect(snap(h.x - 10), 11 * TS - 6, 32, 4); }
+      if (Math.floor(h.warn / 5) % 2) landMark(h.x + 6, false);
       drawSpr(ICICLE, h.x + 6, 18);
     } else drawSpr(ICICLE, h.x + 6, h.y + h.h);
   }
@@ -187,7 +265,7 @@ function renderWorld() {
   groundLine(lv.startX); groundLine(lv.finishX);
   for (const e of lv.enemies) if (e.x > cam - 60 && e.x < cam + VW + 60) drawBeetle(e, lv.theme);
   const B = G.boss;
-  if (B && (B.state !== 'idle' || B.x < cam + VW + 80)) (B.type === 'spider' ? drawSpider : drawSnowman)(B);
+  if (B && (B.state !== 'idle' || B.x < cam + VW + 80)) ({ spider: drawSpider, snowman: drawSnowman, snake: drawSnake, ape: drawApe })[B.type](B);
   drawHazards();
   const p = G.p, ch = CHARS[G.ci];
   if (!(p.inv > 0 && Math.floor(p.inv / 4) % 2) && !(p.dead && p.fell)) {
@@ -196,7 +274,10 @@ function renderWorld() {
     if (p.dead) rot = Math.min(p.deadT, 18) / 18 * Math.PI;
     else if (p.pound && p.poundT < 10) rot = p.poundT / 10 * Math.PI * 2 * p.face;
     if (rot) { X.save(); X.translate(snap(cx), snap(cy)); X.rotate(rot); X.translate(-snap(cx), -snap(cy)); }
-    drawHero(ch.id, cx, p.y + p.h, p.face, p.dead ? 'air' : G.clear ? (Math.floor(G.clearT / 6) % 2 ? 'walk' : 'stand') : heroFrame(p));
+    if (p.rollT > 0 && !p.dead) {   // Cheemus curled into a rolling ball
+      const r = BEAR_BALL.w * PX / 2, by = snap(p.y + p.h - r);
+      X.save(); X.translate(snap(cx), by); X.rotate(p.rollA); X.drawImage(BEAR_BALL.r, -r, -r, r * 2, r * 2); X.restore();
+    } else drawHero(ch.id, cx, p.y + p.h, p.face, p.dead ? 'air' : G.clear ? (Math.floor(G.clearT / 6) % 2 ? 'walk' : 'stand') : heroFrame(p));
     if (ch.special === 'swing' && !p.dead) drawPan(cx, p.y + p.h, p.face, p.swingT);
     if (ch.special === 'spit' && p.spitT > 0) { X.fillStyle = '#ffd23a'; X.fillRect(snap(cx + p.face * 12), snap(p.y + 12), 6, 4); }
     if (rot) X.restore();
@@ -207,12 +288,13 @@ function renderWorld() {
     if (q.type === 'puff') { const r = snap(q.size * (0.3 + a * 0.9)); X.fillStyle = q.col; X.fillRect(snap(q.x) - r, snap(q.y) - r, r * 2, r * 2); }
     else if (q.type === 'coin') drawSpr(COIN[COIN_SEQ[Math.floor(q.life / 3) % 4]], q.x, q.y + 11);
     else if (q.type === 'spark') { if (a > 0.15) { X.fillStyle = q.col; X.fillRect(snap(q.x) - 2, snap(q.y) - 2, 4, 4); } }
+    else if (q.type === 'wind') { const len = snap(q.size * (0.3 + a * 0.7)); X.fillStyle = q.col; X.fillRect(snap(q.dir > 0 ? q.x - len : q.x), snap(q.y), len, PX); }
     else if (q.type === 'conf') { X.fillStyle = q.col; X.fillRect(snap(q.x), snap(q.y), Math.floor(q.life / 8) % 2 ? 8 : 4, 4); }
     else if (q.type === 'wave') { const hgt = snap(8 + 22 * a); X.fillStyle = '#fff0a8'; X.fillRect(snap(q.x), snap(q.y) - hgt, 6, hgt); X.fillStyle = '#ffffff'; X.fillRect(snap(q.x - q.vx * 0.6), snap(q.y) - snap(hgt * 0.6), 4, snap(hgt * 0.6)); }
     else { X.fillStyle = q.col; X.fillRect(snap(q.x - q.size / 2), snap(q.y - q.size / 2), q.size, q.size); X.fillStyle = '#7a3412'; X.fillRect(snap(q.x - q.size / 2), snap(q.y), q.size, 2); }
   }
   X.restore();
-  if (lv.theme === 2) snowfall(cam);
+  if (lv.theme === 2) snowfall(cam); else if (lv.theme === 3) leaves(cam); else if (lv.theme === 4) embers(cam);
   drawHUD();
 }
 function drawHUD() {
@@ -250,18 +332,19 @@ function menuBackdrop(withChars = true) {
   for (let i = 0; i < VW / TS + 2; i++) { X.drawImage(TILES[0]['g1' + (i % 3)], off + i * TS, 440, TS, TS); X.drawImage(TILES[0]['g0' + (i % 3)], off + i * TS, 480, TS, TS); }
   if (withChars) {
     const fr = Math.floor(T / 8) % 2 ? 'walk' : 'stand', c = VW / 2;
-    drawHero('capy', c - 250, 440, 1, fr, 2);
+    drawHero('capy', c - 320, 440, 1, fr, 2);
     const oh = snap(Math.abs(Math.sin(T * 0.08)) * 36);
-    drawHero('owl', c - 85, 440 - oh, 1, oh > 3 ? 'air' : fr, 2);
-    drawHero('mole', c + 80, 440, 1, fr, 2);
-    drawHero('coon', c + 240, 440, 1, fr, 2); drawPan(c + 240, 440, 1, T % 90 < 18 ? 18 - (T % 90) : 0, 2);
+    drawHero('owl', c - 165, 440 - oh, 1, oh > 3 ? 'air' : fr, 2);
+    drawHero('mole', c - 20, 440, 1, fr, 2);
+    drawHero('coon', c + 125, 440, 1, fr, 2); drawPan(c + 125, 440, 1, T % 90 < 18 ? 18 - (T % 90) : 0, 2);
+    drawHero('bear', c + 300, 440, 1, fr, 2);
   }
 }
 function hint(key) { txt(t(touchActive() ? 'hintTap' : key), VW / 2, 505, 10, '#fff', 'center'); }
 function renderMenu() {
   menuBackdrop();
   title('CAPY DASH', 82 + Math.sin(T * 0.05) * 4, 54);
-  txt(t('subtitle') + ' · v1.0', VW / 2, 134, 12, '#2a2140', 'center', false);
+  txt(t('subtitle') + ' · v1.1', VW / 2, 134, 12, '#2a2140', 'center', false);
   MENU.forEach((m, i) => button(t(m.k), VW / 2 - 150, 160 + i * 56, 300, 44, sel === i, m.a, () => sel = i));
   if (showIosHint()) {
     buttons.push({ x: 40, y: 384, w: VW - 80, h: 40, action: () => { iosHintClosed = true; SFX.move(); } });
@@ -291,7 +374,7 @@ function renderControls() {
   txt(t('controls'), VW / 2, 70, 22, '#ffd23a', 'center');
   const rows = touchActive()
     ? [['c_move', t('t_move')], ['c_jump', 'A'], ['c_special', 'B'], ['c_pause', '‖']]
-    : [['c_move', '← →  /  A D'], ['c_jump', t('k_jump')], ['c_run', 'SHIFT / X'], ['c_special', t('k_special')], ['c_kerim', t('k_kerim')], ['c_pause', 'ESC / P'], ['c_mute', 'M']];
+    : [['c_move', '← →  /  A D'], ['c_jump', t('k_jump')], ['c_run', 'SHIFT / X'], ['c_special', t('k_special')], ['c_fred', t('k_fred')], ['c_pause', 'ESC / P'], ['c_mute', 'M']];
   rows.forEach(([a, b], i) => { txt(t(a), VW / 2 - 300, 116 + i * 36, 13, '#c9bfff', 'left', true, 250); txt(b, VW / 2 + 300, 116 + i * 36, 13, '#fff', 'right', true, 340); });
   txt(t('c_tip'), VW / 2, 392, 10, '#ffd23a', 'center', true, 620);
   button(t('back'), VW / 2 - 100, 462, 200, 46, true, () => go('menu'));
@@ -326,7 +409,7 @@ function renderNotes() {
 function renderSelect() {
   menuBackdrop(false);
   title(t('chooseHero'), 48, 28);
-  const w = 212, gap = 20, x0 = (VW - (w * 4 + gap * 3)) / 2;
+  const w = 176, gap = 12, x0 = (VW - (w * CHARS.length + gap * (CHARS.length - 1))) / 2;
   CHARS.forEach((c, i) => {
     const on = charSel === i, x = x0 + i * (w + gap), y = 80 + (on ? -6 : 0), h = 348;
     buttons.push({ x, y, w, h, action: () => { if (charSel === i) go('levels'); else { charSel = i; SFX.move(); } }, hover: () => { if (charSel !== i) { charSel = i; SFX.move(); } } });
@@ -339,20 +422,21 @@ function renderSelect() {
     if (c.id === 'coon') drawPan(x + w / 2, y + 102, 1, on && T % 70 < 18 ? 18 - (T % 70) : 0, 2);
     txt(t('h_' + c.id), x + w / 2, y + 132, 16, on ? '#ffd23a' : '#fff', 'center', true, w - 20);
     txt(t('tag_' + c.id), x + w / 2, y + 156, 10, '#c9bfff', 'center', false, w - 20);
-    [['speed', c.stats[0]], ['jump', c.stats[1]]].forEach(([n, v], k) => {
-      txt(t(n), x + 16, y + 184 + k * 24, 10, '#fff', 'left', false, 72);
-      for (let j = 0; j < 5; j++) { X.fillStyle = j < v ? '#ffd23a' : '#251e3f'; X.fillRect(x + 94 + j * 20, y + 177 + k * 24, 16, 14); }
+    ['speed', 'jump', 'power'].forEach((n, k) => {
+      txt(t(n), x + 12, y + 182 + k * 20, 9, '#fff', 'left', false, 58);
+      for (let j = 0; j < 5; j++) { X.fillStyle = j < c.stats[k] ? '#ffd23a' : '#251e3f'; X.fillRect(x + 74 + j * 18, y + 176 + k * 20, 14, 12); }
     });
-    pbox(x + 12, y + 224, w - 24, 46, '#251e3f');
-    txt(t('special'), x + w / 2, y + 238, 9, '#8f86b8', 'center', false, w - 36);
-    txt(t('sp_' + c.id), x + w / 2, y + 257, 11, '#7cf07a', 'center', false, w - 36);
+    pbox(x + 12, y + 238, w - 24, 40, '#251e3f');
+    txt(t('special'), x + w / 2, y + 250, 8, '#8f86b8', 'center', false, w - 36);
+    txt(t('sp_' + c.id), x + w / 2, y + 266, 10, '#7cf07a', 'center', false, w - 36);
     // high scores per level
-    pbox(x + 12, y + 278, w - 24, 58, '#251e3f');
-    txt(t('highscores'), x + w / 2, y + 291, 9, '#8f86b8', 'center', false, w - 36);
+    pbox(x + 12, y + 284, w - 24, 56, '#251e3f');
+    txt(t('highscores'), x + w / 2, y + 296, 8, '#8f86b8', 'center', false, w - 36);
+    const cw = (w - 24) / LEVELS.length;
     LEVELS.forEach((_, li) => {
-      const b = loadBest(li, c.id), cx = x + 12 + (w - 24) * (li + 0.5) / 3;
-      txt(String(li + 1), cx, y + 308, 8, '#c9bfff', 'center', false);
-      txt(b ? String(b.score) : '-', cx, y + 324, 10, b ? '#ffd23a' : '#5c6f99', 'center', false, (w - 24) / 3 - 6);
+      const b = loadBest(li, c.id), cx = x + 12 + cw * (li + 0.5);
+      txt(String(li + 1), cx, y + 312, 8, '#c9bfff', 'center', false);
+      txt(b ? String(b.score) : '-', cx, y + 328, 9, b ? '#ffd23a' : '#5c6f99', 'center', false, cw - 2);
     });
   });
   button(t('next'), VW / 2 - 110, 448, 220, 44, true, () => go('levels'));
@@ -361,33 +445,39 @@ function renderSelect() {
 }
 function levelPreview(i, px0, py0, pw, ph) {
   const theme = LEVELS[i].theme;
-  X.fillStyle = ['#62bdf0', '#1b1530', '#adc4e2'][theme]; X.fillRect(px0, py0, pw, ph);
+  X.fillStyle = ['#62bdf0', '#1b1530', '#adc4e2', '#95d4c8', '#3d1a1e'][theme]; X.fillRect(px0, py0, pw, ph);
   if (theme === 1) { for (let s = 0; s < 14; s++) { X.fillStyle = '#fff0a8'; X.fillRect(px0 + 10 + (s * 53) % (pw - 20), py0 + 8 + (s * 31) % 60, 2, 2); } el(px0 + pw - 40, py0 + 30, 14, 14, '#fff6c9'); }
   else if (theme === 0) { el(px0 + pw - 40, py0 + 30, 16, 16, '#fff6c9'); drawSpr(CLOUD, px0 + 80, py0 + 40, 1, 2); }
-  else {
+  else if (theme === 3) { for (let k = 0; k < 4; k++) { X.fillStyle = '#2f5a3a'; X.fillRect(px0 + 14 + k * 40, py0 + 40, 10, ph - 70); el(px0 + 19 + k * 40, py0 + 36, 24, 22, '#4a7a55'); } }
+  else if (theme === 4) {
+    for (let sx = 0; sx < pw; sx += 4) { const d = Math.abs(sx - pw * 0.5), hgt = Math.max(0, (d < 14 ? 66 : 80 - d * 0.9)); if (hgt > 0) { X.fillStyle = '#3a1e22'; X.fillRect(px0 + sx, py0 + ph - 30 - hgt, 4, hgt); } }
+    X.fillStyle = '#ff9a1f'; X.fillRect(px0 + pw * 0.5 - 14, py0 + ph - 96, 28, 4);
+  } else {
     for (let sx = 0; sx < pw; sx += 4) { const hgt = Math.max(0, 70 - Math.abs(sx - pw * 0.6) * 0.7); if (hgt > 0) { X.fillStyle = '#6b7fa8'; X.fillRect(px0 + sx, py0 + ph - 30 - hgt, 4, hgt); if (hgt > 45) { X.fillStyle = '#ffffff'; X.fillRect(px0 + sx, py0 + ph - 30 - hgt, 4, hgt - 45); } } }
     X.fillStyle = '#ffffff'; for (let s = 0; s < 18; s++) X.fillRect(px0 + 6 + (s * 47) % (pw - 12), py0 + 6 + ((s * 29 + T) % (ph - 40)), 2, 2);
   }
   for (let k = 0; k < pw / TS; k++) X.drawImage(TILES[theme]['g1' + (k % 3)], px0 + k * TS, py0 + ph - 30, Math.min(TS, pw - k * TS), 30);
   if (theme === 1) { drawSpr(SPIDER, px0 + pw - 70, py0 + 70, 1, 1); X.fillStyle = '#d9d9e0'; X.fillRect(px0 + pw - 70, py0, 2, 42); }
-  else if (theme === 2) X.drawImage(SNOWMAN.r, px0 + pw - 86, py0 + ph - 30 - 86, 60, 86);
+  else if (theme === 2) X.drawImage(SNOWMAN.r, px0 + pw - 76, py0 + ph - 30 - 86, 60, 86);
+  else if (theme === 3) drawSpr(SNAKE_HEAD, px0 + pw - 40, py0 + ph - 30, -1, 1.5);
+  else if (theme === 4) drawSpr(APE, px0 + pw - 42, py0 + ph - 30, 1, 1);
   else drawSpr(BEETLE[0], px0 + pw - 80, py0 + ph - 30, -1);
-  drawHero(CHARS[charSel].id, px0 + 50, py0 + ph - 30, 1, 'stand', 1);
+  drawHero(CHARS[charSel].id, px0 + 34, py0 + ph - 30, 1, 'stand', 1);
 }
 function renderLevels() {
   menuBackdrop(false);
   title(t('chooseLevel'), 48, 28);
-  const id = CHARS[charSel].id, w = 284, gap = 22, x0 = (VW - (w * 3 + gap * 2)) / 2;
+  const id = CHARS[charSel].id, w = 176, gap = 12, x0 = (VW - (w * LEVELS.length + gap * (LEVELS.length - 1))) / 2;
   LEVELS.forEach((lvd, i) => {
     const on = levelSel === i, h = 330, x = x0 + i * (w + gap), y = 88 + (on ? -6 : 0);
     buttons.push({ x, y, w, h, action: () => { if (levelSel === i) startGame(charSel, i); else { levelSel = i; SFX.move(); } }, hover: () => { if (levelSel !== i) { levelSel = i; SFX.move(); } } });
     pbox(x, y + 10, w, h, '#1b1530'); pbox(x - 4, y - 4, w + 8, h + 8, on ? '#ffd23a' : '#2a2140'); pbox(x, y, w, h, '#3a2f5c');
-    levelPreview(i, x + 14, y + 14, w - 28, 140);
-    txt(`${i + 1} · ${t(lvd.key)}`, x + w / 2, y + 182, 14, on ? '#ffd23a' : '#fff', 'center', true, w - 24);
-    txt(t(lvd.key + 'd'), x + w / 2, y + 210, 10, '#c9bfff', 'center', false, w - 24);
-    txt(t('par', lvd.par), x + w / 2, y + 238, 10, '#fdf6e3', 'center', false, w - 24);
+    levelPreview(i, x + 12, y + 12, w - 24, 130);
+    txt(`${i + 1} · ${t(lvd.key)}`, x + w / 2, y + 170, 13, on ? '#ffd23a' : '#fff', 'center', true, w - 16);
+    txt(t(lvd.key + 'd'), x + w / 2, y + 200, 9, '#c9bfff', 'center', false, w - 16);
+    txt(t('par', lvd.par), x + w / 2, y + 230, 10, '#fdf6e3', 'center', false, w - 16);
     const b = loadBest(i, id);
-    txt(b ? t('best', b.score, fmtTime(b.time)) : t('noBest'), x + w / 2, y + 296, 10, b ? '#7cf07a' : '#8f86b8', 'center', false, w - 24);
+    txt(b ? t('best', b.score, fmtTime(b.time)) : t('noBest'), x + w / 2, y + 296, 10, b ? '#7cf07a' : '#8f86b8', 'center', false, w - 16);
   });
   button(t('start'), VW / 2 - 110, 446, 220, 46, true, () => startGame(charSel, levelSel));
   if (!touchActive()) txt(t('hintLevel'), VW / 2, 508, 9, '#fff', 'center');
