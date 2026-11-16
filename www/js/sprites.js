@@ -92,8 +92,43 @@ const HERO = {
     ['..kkgggggggk.....', '....kGGk.kGGk....', '....kkkk.kkkk....'],
     ['..kkgggggggk.....', '...kGGk...kGGk...', '...kkkk...kkkk...'],
     ['..kkgggggggk.....', '....kGk...kGk....', '....kk.....kk....']],
-    { k: '#1c1c24', g: '#8a8f9c', G: '#5f6672', w: '#e4e8ee', e: '#1a1a1a', n: '#1a1a1a' })
+    { k: '#1c1c24', g: '#8a8f9c', G: '#5f6672', w: '#e4e8ee', e: '#1a1a1a', n: '#1a1a1a' }),
+  bear: heroSet([
+    '................kk.kk...',
+    '...............kwwkwwk..',
+    '..............kwwwwwwwk.',
+    '....kkkkkkkkkkwwwwwewwwk',
+    '...kwwwwwwwwwwwwwwwwwwwk',
+    '..kwwwwwwwwwwwwwwwwwwwnk',
+    '.kwwwwwwwwwwwwwwwwwkkk..',
+    '.kwwwwwwwwwwwwwwwwwwk...',
+    'kwwwwwwwwwwwwwwwwwwwk...',
+    'kddwwwwwwwwwwwwwwwwwk...',
+    'kddddwwwwwwwwwwwwwwdk...',
+    '.kddddddwwwwwwwwwddk....'], [
+    ['.kwwk.kwwk....kwwk.kwwk.', '.kwwk.kwwk....kwwk.kwwk.', '.kkkk.kkkk....kkkk.kkkk.'],
+    ['kwwk...kwwk.kwwk...kwwk.', 'kwwk...kwwk.kwwk...kwwk.', 'kkkk...kkkk.kkkk...kkkk.'],
+    ['..kwwk.kwwk..kwwk.kwwk..', '..kkkk.kkkk..kkkk.kkkk..', '........................']],
+    { k: '#2e3d5c', w: '#ffffff', d: '#d6f2ff', e: '#1a1a1a', n: '#1a1a1a' })
 };
+// Cheemus curled up into a ball for the BEAR ROLL (drawn rotated)
+const BEAR_BALL = makeSprite([
+  '.....kkkkkk.....',
+  '...kkwwwwwwkk...',
+  '..kwwwwwwwwwwk..',
+  '.kwwwwwwwwwkkwk.',
+  '.kwwwwwwwwwwwwk.',
+  'kwwwwwwwwwwwewwk',
+  'kwwwwwwwwwwwwwnk',
+  'kwwwdwwwwwwwwwwk',
+  'kwwwwdwwwwwwwwwk',
+  'kdwwwwdwwwwwwwwk',
+  'kddwwwwddwwwwwdk',
+  '.kddwwwwwwddwdk.',
+  '.kdddwwwwwwwddk.',
+  '..kddddddddddk..',
+  '...kkddddddkk...',
+  '.....kkkkkk.....'], { k: '#2e3d5c', w: '#ffffff', d: '#d6f2ff', e: '#1a1a1a', n: '#1a1a1a' });
 const PAN = makeSprite([
   '.......kkkkk.',
   '......kpppppk',
@@ -145,6 +180,53 @@ const BEETLE_FROST = [makeSprite(BEETLE_TOP.concat(['.k..k...k..k....', 'k..k...
                       makeSprite(BEETLE_TOP.concat(['..k..k...k..k...', '..k..k...k..k...']), BEETLE_FROST_LEG)];
 const BEETLE_FROST_FLAT = makeSprite(['..kkkkkkkkkkkk..', '.kppppPpppppppk.', 'kkkkkkkkkkkkkkkk'], BEETLE_FROST_LEG);
 const CLOUD_S = makeSprite(CLOUD_ROWS, { w: '#e8f1fa', b: '#c6d8ee' });
+const BEETLE_LAVA_LEG = { k: '#1a1a1a', p: '#3a2226', P: '#ff9a1f', s: '#e94b5a', w: '#ffd23a', e: '#1a1a1a' };
+const BEETLE_LAVA = [makeSprite(BEETLE_TOP.concat(['.k..k...k..k....', 'k..k...k..k.....']), BEETLE_LAVA_LEG),
+                     makeSprite(BEETLE_TOP.concat(['..k..k...k..k...', '..k..k...k..k...']), BEETLE_LAVA_LEG)];
+const BEETLE_LAVA_FLAT = makeSprite(['..kkkkkkkkkkkk..', '.kppppPpppppppk.', 'kkkkkkkkkkkkkkkk'], BEETLE_LAVA_LEG);
+// Venomcoil's head (faces right) + its poison blob
+const SNAKE_HEAD = makeSprite([
+  '.....kkkkkkk......',
+  '...kkgggggggkk....',
+  '..kgggGggggyykgk..',
+  '.kggGggGgggyekgggk',
+  'kggggggggggggggggk',
+  'kggGggGgglllllllk.',
+  '.kglllllllllkrrkk.',
+  '..kkkkkkkkkk..r.r.'], { k: '#1f4a2a', g: '#3fa34a', G: '#2f7a35', l: '#c8e07a', y: '#ffd23a', e: '#1a1a1a', r: '#e94b5a' });
+const VENOM = makeSprite(['...kkkk.', '.kkgglgk', 'kggggggk', '.kkggggk', '...kkkk.'], { k: '#1f4a2a', g: '#7cf07a', l: '#e8ffd0' });
+const LAVABOMB = makeSprite(['..kkk..', '.kFrrk.', 'kFyFrrk', 'kFFrrrk', 'krrrrrk', '.krrrk.', '..kkk..'], { k: '#5e2a10', F: '#ff9a1f', y: '#ffd23a', r: '#e94b5a' });
+// Cinderback, the feral lava ape (left half, mirrored)
+const APE = makeSprite([
+  '..........kkkkkk',
+  '........kkffffff',
+  '.......kffffffff',
+  '......kfffFfffff',
+  '......kffkkkksss',
+  '......kfsyykssss',
+  '......kfssssssss',
+  '......kfsssnssss',
+  '.......kfsswwwww',
+  '.......kfsrrrrrr',
+  '........kffwwwww',
+  '....kkkkfffsssss',
+  '..kkfffffffsssss',
+  '.kfffffFfffsssss',
+  'kffffffffffsssss',
+  'kfffFfffffssssss',
+  'kffffffffffsssss',
+  'kfffkfffffffssss',
+  'kfffkffffffffsss',
+  'kfffkffffFffffff',
+  'kfffkfffffffffff',
+  'kFffkfffffffffff',
+  'kfffkkffffffffff',
+  'kffffkfffffffkkk',
+  'kffffkffffffk...',
+  'kkkkk.kfffffk...',
+  '......kfffffk...',
+  '.....kfffffffk..',
+  '.....kkkkkkkkk..'], { k: '#1a1a1a', f: '#3b2a1e', F: '#ff9a1f', s: '#5b4a3a', y: '#ffd23a', n: '#1a1a1a', w: '#fdf6e3', r: '#e94b5a' }, true);
 // Ays' spit shot
 const SEED = makeSprite(['.yyy.', 'yllyy', 'yyyyo', '.ooo.'], { y: '#ffd23a', l: '#fff3a1', o: '#e0a800' });
 const SNOWBALL = makeSprite(['.wwww.', 'wwwwwd', 'wwwwwd', 'wwwwdd', 'dwwddd', '.dddd.'], { w: '#ffffff', d: '#b2e2fa' });
@@ -197,12 +279,13 @@ const SNOWMAN = makeSprite([
   '...kkkkkkkkkkkk'], { k: '#2e3d5c', w: '#ffffff', d: '#b2e2fa', s: '#2a2140', r: '#e94b5a', c: '#1c1c24', o: '#ff9a1f' }, true);
 
 // =====================================================================
-// Tiles: 20x20 low-res pixel tiles per theme (0 day, 1 night, 2 snow)
+// Tiles: 20x20 low-res pixel tiles per theme (0 day, 1 night, 2 snow, 3 forest, 4 lava)
+// Lava ('~') is animated, so it is drawn live in ui.js (drawLava), not here.
 // =====================================================================
 function tileSet(theme) {
-  const night = theme === 1, snow = theme === 2;
+  const night = theme === 1, snow = theme === 2, forest = theme === 3, lava = theme === 4;
   const S = {}, mk = fn => { const c = mkCanvas(20, 20), x = c.getContext('2d'); fn((col, a, b, w = 1, h = 1) => { x.fillStyle = col; x.fillRect(a, b, w, h); }, x); return c; };
-  const dirt = snow ? '#4a5a7a' : night ? '#5e3b1e' : '#8a5a34', speck = snow ? '#3a4a68' : night ? '#4b2f17' : '#74492a';
+  const dirt = lava ? '#3a2226' : snow ? '#4a5a7a' : night || forest ? '#5e3b1e' : '#8a5a34', speck = lava ? '#2a1418' : snow ? '#3a4a68' : night || forest ? '#4b2f17' : '#74492a';
   const cap = f => { f('#ffffff', 0, 0, 20, 3); f('#d6f2ff', 0, 3, 20, 1); f('#d6f2ff', 3, 4, 2, 1); f('#d6f2ff', 13, 4, 3, 1); };
   for (let v = 0; v < 3; v++) for (const top of [0, 1]) S['g' + top + v] = mk(f => {
     f(dirt, 0, 0, 20, 20);
@@ -211,14 +294,26 @@ function tileSet(theme) {
       f('#ffffff', 0, 0, 20, 5); f('#d6f2ff', 0, 5, 20, 1);
       for (let i = v; i < 20; i += 4) f('#d6f2ff', i, 6, 2, 1);
       for (let i = v * 2; i < 20; i += 7) f('#e8f1fa', i, 1, 2, 1);
+    } else if (top && lava) {       // cooled crust with glowing cracks
+      f('#5a3a3a', 0, 0, 20, 5); f('#2a1418', 0, 5, 20, 1); f('#7a4a3a', 0, 0, 20, 1);
+      for (let i = v * 3; i < 20; i += 9) { f('#e94b5a', i, 2, 3, 1); f('#ff9a1f', i + 1, 2, 1, 1); f('#e94b5a', i + 2, 3, 1, 2); }
+    } else if (top && forest) {     // deep moss
+      f('#2f7a35', 0, 0, 20, 5); f('#1f4a2a', 0, 5, 20, 2);
+      for (let i = v; i < 20; i += 4) f('#1f4a2a', i, 7, 2, 1);
+      f('#3fa34a', 0, 0, 20, 1); for (let i = v * 2; i < 20; i += 6) { f('#4fc04c', i, 1, 2, 1); f('#3fa34a', i + 3, 2, 1, 1); }
     } else if (top) {
       f(night ? '#2f7a35' : '#4fc04c', 0, 0, 20, 5); f(night ? '#1f4a2a' : '#3a9a3a', 0, 5, 20, 1);
       for (let i = 0; i < 20; i += 3) if ((i + v) % 2) f(night ? '#1f4a2a' : '#3a9a3a', i, 6, 2, 1);
       f(night ? '#3e9a44' : '#6ad866', 0, 0, 20, 1); for (let i = v; i < 20; i += 5) f(night ? '#3e9a44' : '#6ad866', i, 1, 1, 1);
     }
   });
-  S.X = mk(f => { f(night ? '#2a2140' : '#5f6672', 0, 0, 20, 20); f(night ? '#8a8f9c' : '#b4bcc8', 0, 0, 19, 19); f(night ? '#6b7380' : '#939baa', 1, 1, 18, 18); f(night ? '#5f6672' : '#7d8594', 3, 3, 2, 2); f(night ? '#5f6672' : '#7d8594', 15, 15, 2, 2); if (snow) cap(f); });
-  S.B = mk(f => { const m = night ? '#5e2a10' : '#7a3412'; f(night ? '#a8501f' : '#c8642f', 0, 0, 20, 20); f(night ? '#c8642f' : '#e07a40', 0, 0, 20, 1); f(m, 0, 9, 20, 1); f(m, 0, 19, 20, 1); f(m, 9, 0, 1, 9); f(m, 4, 10, 1, 9); f(m, 14, 10, 1, 9); if (snow) cap(f); });
+  S.X = mk(f => {
+    if (lava) { f('#1c1014', 0, 0, 20, 20); f('#5a3a3a', 0, 0, 19, 19); f('#4a2a2a', 1, 1, 18, 18); f('#3a2226', 3, 3, 2, 2); f('#3a2226', 15, 15, 2, 2); f('#e94b5a', 8, 6, 1, 4); f('#e94b5a', 9, 10, 3, 1); return; }
+    f(night ? '#2a2140' : '#5f6672', 0, 0, 20, 20); f(night ? '#8a8f9c' : '#b4bcc8', 0, 0, 19, 19); f(night ? '#6b7380' : '#939baa', 1, 1, 18, 18); f(night ? '#5f6672' : '#7d8594', 3, 3, 2, 2); f(night ? '#5f6672' : '#7d8594', 15, 15, 2, 2);
+    if (snow) cap(f);
+    if (forest) { f('#3fa34a', 0, 0, 19, 3); f('#2f7a35', 0, 3, 19, 1); f('#2f7a35', 2, 4, 3, 2); f('#2f7a35', 12, 4, 2, 3); }
+  });
+  S.B = mk(f => { const dk = night || lava, m = dk ? '#5e2a10' : '#7a3412'; f(dk ? '#a8501f' : '#c8642f', 0, 0, 20, 20); f(dk ? '#c8642f' : '#e07a40', 0, 0, 20, 1); f(m, 0, 9, 20, 1); f(m, 0, 19, 20, 1); f(m, 9, 0, 1, 9); f(m, 4, 10, 1, 9); f(m, 14, 10, 1, 9); if (snow) cap(f); });
   for (const k of [0, 1]) S['Q' + k] = mk((f, x) => { f('#a8670f', 0, 0, 20, 20); f(k ? '#ffcc2e' : '#f2b233', 1, 1, 18, 18); [[2, 2], [17, 2], [2, 17], [17, 17]].forEach(([a, b]) => f('#a8670f', a, b)); x.drawImage(STAR.r, 5, 5); });
   S.U = mk(f => { f('#5e3d1f', 0, 0, 20, 20); f('#9b6b3f', 1, 1, 18, 18); [[2, 2], [17, 2], [2, 17], [17, 17]].forEach(([a, b]) => f('#5e3d1f', a, b)); });
   S['^'] = mk(f => { f('#6b7380', 1, 17, 18, 3); for (let i = 0; i < 3; i++) { const x0 = 1 + i * 6; for (let r = 0; r < 9; r++) { const hw = Math.ceil((r + 1) * 3 / 9); f(snow ? '#d6f2ff' : '#e4e8ee', x0 + 3 - hw, 8 + r, hw, 1); f(snow ? '#8fd3f4' : '#a3abb8', x0 + 3, 8 + r, hw, 1); } } });
@@ -227,4 +322,4 @@ function tileSet(theme) {
   S.I = mk(f => { f('#4f8fd1', 0, 0, 20, 20); f('#8fd3f4', 0, 0, 19, 19); f('#d6f2ff', 0, 0, 19, 2); f('#d6f2ff', 0, 0, 2, 19); for (let i = 0; i < 6; i++) { f('#ffffff', 5 + i, 12 - i); f('#ffffff', 11 + i, 15 - i); } });
   return S;
 }
-const TILES = [tileSet(0), tileSet(1), tileSet(2)];
+const TILES = [tileSet(0), tileSet(1), tileSet(2), tileSet(3), tileSet(4)];
